@@ -1,5 +1,6 @@
 import json
 
+
 def boundingBoxAroundPolyCoords(coords):
     """
     bounding box
@@ -42,8 +43,9 @@ def pnpoly(x, y, coords):
     while i < len(vert):
         if ((vert[i][0] > y) != (vert[j][0] > y)) and (x < (vert[j][1] - vert[i][1]) * (y - vert[i][0]) / (vert[j][0] - vert[i][0]) + vert[i][1]):
             inside = not inside
-        i += 1
         j = i
+        i += 1
+
     return inside
 
 
@@ -51,7 +53,7 @@ def pointInPolygon(p, poly):
     """
     main point in polygon function
     """
-    coords = [poly['coordinates']] if  poly['type'] == 'Polygon' else poly['coordinates']
+    coords = [poly['coordinates']] if poly['type'] == 'Polygon' else poly['coordinates']
     inside_box = False
     for coord in coords:
         if pointInBoundingBox(p, boundingBoxAroundPolyCoords(coord)):
@@ -59,12 +61,13 @@ def pointInPolygon(p, poly):
     if not inside_box:
         return False
 
-    inside_poly = True
+    inside_poly = False
     for coord in coords:
         if pnpoly(p['coordinates'][1], p['coordinates'][0], coord):
             inside_poly = True
 
     return inside_poly
+
 
 def test():
     in_str = '{"type": "Point", "coordinates": [5, 5]}'
