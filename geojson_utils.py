@@ -1,10 +1,10 @@
-import json
 import math
 
 
 def linestrings_intersect(line1, line2):
     """
     To valid whether linestrings from geojson are intersected with each other.
+    reference: http://www.kevlindev.com/gui/math/intersection/Intersection.js
 
     Keyword arguments:
     line1 -- first line geojson object
@@ -138,22 +138,115 @@ def point_in_multipolygon(point, multipoly):
 def number2radius(number):
     """
     convert degree into radius
+
+    Keyword arguments:
+    number -- degree
+
+    return radius
     """
     return number*math.pi /180
 
 def number2degree(number):
     """
     convert radius into degree
+
+    Keyword arguments:
+    number -- radius
+
+    return degree
     """
     return number* 180/math.pi
 
-#drawCircle
+def draw_circle(radius_in_meters, center_point, steps=15):
+    """
+    get a circle shape polygon based on centerPoint and radius
 
-#rectangleCentroid
+    Keyword arguments:
+    point1  -- point one geojson object
+    point2  -- point two geojson object
 
-#pointDistance
+    if(point inside multipoly) return true else false
+    """
+    steps = steps if steps > 15 else 15
+    center = [center_point['coordinates'][1], center_point['coordinates'][0]]
+    dist = (radius_in_meters / 1000) / 6371
+    #convert meters to radiant
+    rad_center = [number2radius(center[0]), number2radius(center[1])]
+    # 15 sided circle
+    poly = []
+    for step in range(0, steps):
+        brng = 2 * math.pi * step / steps
+        lat = math.asin(math.sin(rad_center[0]) * math.cos(dist)+ \
+        math.cos(rad_center[0]) * math.sin(dist) * math.cos(brng))
+        lng = rad_center[1] + math.atan2(math.sin(brng) * math.sin(dist) \
+        * math.cos(rad_center[0]), math.cos(dist) - math.sin(rad_center[0]) * math.sin(lat))
+        poly.append([number2degree(lng), number2degree(lat)])
+    return {"type": "Polygon", "coordinates": [poly]}
 
-#geometryWithinRadius
+def rectangle_centroid(rectangle):
+    """
+    get the centroid of the rectangle
+
+    Keyword arguments:
+    rectangle  -- polygon geojson object
+
+    return centroid
+    """
+    bbox = rectangle['coordinates'][0]
+    xmin = bbox[0][0]
+    ymin = bbox[0][1]
+    xmax = bbox[2][0]
+    ymax = bbox[2][1]
+    xwidth = xmax - xmin
+    ywidth = ymax - ymin
+    return {'type': 'Point', 'coordinates': [xmin + xwidth / 2, ymin + ywidth / 2]}
+
+def point_distance(point1, point2):
+    """
+    calculate the distance between two point on the sphere like google map
+    reference http://www.movable-type.co.uk/scripts/latlong.html
+
+    Keyword arguments:
+    point1  -- point one geojson object
+    point2  -- point two geojson object
+
+    if(point inside multipoly) return true else false
+    """
+    lon1 = point1['coordinates'][0]
+    lat1 = point1['coordinates'][1]
+    lon2 = point2['coordinates'][0]
+    lat2 = point2['coordinates'][1]
+    deg_lat = number2radius(lat2 - lat1)
+    deg_lon = number2radius(lon2 - lon1)
+    a = math.pow(math.sin(deg_lat / 2), 2) + math.cos(number2radius(lat1))* \
+    math.cos(number2radius(lat2)) * math.pow(math.sin(deg_lon / 2), 2)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    return (6371 * c) * 1000
+
+
+def geometry_within_radius(geometry, center, radius):
+    """
+    valid whether point or linestring or polygon is inside a radius around a center
+
+    Keyword arguments:
+    geometry  -- point geojson object
+    center    -- linestring geojson object
+    radius    -- polygon geojson object
+
+    if(geometry inside radius) return true else false
+    """
+    if geometry['type'] == 'Point':
+        return point_distance(geometry, center) <= radius
+    elif geometry['type'] == 'LineString' or geometry['type'] == 'Polygon':
+        point = {}
+        #it's enough to check the exterior ring of the Polygon
+        coordinates = geometry['coordinates'][0] if geometry['type'] == 'Polygon' else geometry['coordinates']
+
+        for coordinate in coordinates:
+            point['coordinates'] = coordinate
+            if point_distance(point, center) > radius:
+                return False
+    return True
 
 #area
 
@@ -163,46 +256,3 @@ def number2degree(number):
 
 #destinationPoint
 
-def test():
-    """
-    test for geojson-python-utils
-    """
-    #linestrings intersect
-    diagonal_up_str = '{ "type": "LineString","coordinates": [[0, 0], [10, 10]]}'
-    diagonal_down_str = '{ "type": "LineString","coordinates": [[10, 0], [0, 10]]}'
-    far_away_str = '{ "type": "LineString","coordinates": [[100, 100], [110, 110]]}'
-    diagonal_up = json.loads(diagonal_up_str)
-    diagonal_down = json.loads(diagonal_down_str)
-    far_away = json.loads(far_away_str)
-    print "two lines intersect:"
-    print linestrings_intersect(diagonal_up, diagonal_down)
-    print "two lines do not intersect:"
-    print linestrings_intersect(diagonal_up, far_away)
-
-    #point in polygon
-    in_str = '{"type": "Point", "coordinates": [5, 5]}'
-    out_str = '{"type": "Point", "coordinates": [15, 15]}'
-    box_str = '{"type": "Polygon","coordinates": [[ [0, 0], [10, 0], [10, 10], [0, 10] ]]}'
-    in_box = json.loads(in_str)
-    out_box = json.loads(out_str)
-    box = json.loads(box_str)
-    print "point inside box:  "
-    print point_in_polygon(in_box, box)
-    print "point outside box:"
-    print point_in_polygon(out_box, box)
-
-    #point in multipolygon
-    point_str = '{"type": "Point", "coordinates": [0.5, 0.5]}'
-    single_point_str = '{"type": "Point", "coordinates": [-1, -1]}'
-    multipoly_str = '{"type":"MultiPolygon","coordinates":[[[[0,0],[0,10],[10,10],[10,0],[0,0]]],[[[10,10],[10,20],[20,20],[20,10],[10,10]]]]}'
-    point = json.loads(point_str)
-    single_point = json.loads(single_point_str)
-    multipoly = json.loads(multipoly_str)
-    print "point inside multipoly: "
-    print  point_in_multipolygon(point, multipoly)
-    print "point outside multipoly : "
-    print point_in_multipolygon(single_point, multipoly)
-
-
-if __name__ == '__main__':
-    test()
