@@ -2,21 +2,27 @@ import json
 import math
 
 
-def linestrings_intersect(l1, l2):
+def linestrings_intersect(line1, line2):
     """
-    bounding box
+    To valid whether linestrings from geojson are intersected with each other.
+
+    Keyword arguments:
+    line1 -- first line geojson object
+    line2 -- second line geojson object
+
+    if(line1 intersects with other) return intersect point array else empty array
     """
     intersects = []
-    for i in range(0, len(l1['coordinates']) - 1):
-        for j in range(0, len(l2['coordinates']) - 1):
-            a1_x = l1['coordinates'][i][1]
-            a1_y = l1['coordinates'][i][0]
-            a2_x = l1['coordinates'][i + 1][1]
-            a2_y = l1['coordinates'][i + 1][0]
-            b1_x = l2['coordinates'][j][1]
-            b1_y = l2['coordinates'][j][0]
-            b2_x = l2['coordinates'][j + 1][1]
-            b2_y = l2['coordinates'][j + 1][0]
+    for i in range(0, len(line1['coordinates']) - 1):
+        for j in range(0, len(line2['coordinates']) - 1):
+            a1_x = line1['coordinates'][i][1]
+            a1_y = line1['coordinates'][i][0]
+            a2_x = line1['coordinates'][i + 1][1]
+            a2_y = line1['coordinates'][i + 1][0]
+            b1_x = line2['coordinates'][j][1]
+            b1_y = line2['coordinates'][j][0]
+            b2_x = line2['coordinates'][j + 1][1]
+            b2_y = line2['coordinates'][j + 1][0]
             ua_t = (b2_x - b1_x) * (a1_y - b1_y) - (b2_y - b1_y) * (a1_x - b1_x)
             ub_t = (a2_x - a1_x) * (a1_y - b1_y) - (a2_y - a1_y) * (a1_x - b1_x)
             u_b = (b2_y - b1_y) * (a2_x - a1_x) - (b2_x - b1_x) * (a2_y - a1_y)
@@ -25,8 +31,8 @@ def linestrings_intersect(l1, l2):
                 u_b = ub_t / u_b
                 if 0 <= u_a and u_a <= 1 and 0 <= u_b and u_b <= 1:
                     intersects.append({'type': 'Point', 'coordinates': [a1_x + u_a * (a2_x - a1_x), a1_y + u_a * (a2_y - a1_y)]})
-    if len(intersects) == 0:
-        intersects = False
+    # if len(intersects) == 0:
+    #     intersects = False
     return intersects
 
 
@@ -46,7 +52,7 @@ def bbox_around_polycoords(coords):
 
 def point_in_bbox(point, bounds):
     """
-    whether the point is inside the bounding box
+    valid whether the point is inside the bounding box
     """
     return not(point['coordinates'][1] < bounds[0] or point['coordinates'][1] > bounds[2] \
      or point['coordinates'][0] < bounds[1] or point['coordinates'][0] > bounds[3])
@@ -54,7 +60,7 @@ def point_in_bbox(point, bounds):
 
 def pnpoly(x, y, coords):
     """
-    point in polygon algorithem
+    the algorithm to judge whether the point is located in polygon
     reference: https://www.ecse.rpi.edu/~wrf/Research/Short_Notes/pnpoly.html#Explanation
     """
     vert = [[0, 0]]
@@ -82,7 +88,13 @@ def pnpoly(x, y, coords):
 
 def point_in_polygon(point, poly):
     """
-    main point in polygon function
+    valid whether the point is located in a polygon
+
+    Keyword arguments:
+    point -- point geojson object
+    poly  -- polygon geojson object
+
+    if(point inside poly) return true else false
     """
     coords = [poly['coordinates']] if poly['type'] == 'Polygon' else poly['coordinates']
     inside_box = False
