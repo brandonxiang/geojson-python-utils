@@ -147,6 +147,21 @@ def number2degree(number):
     """
     return number* 180/math.pi
 
+#drawCircle
+
+#rectangleCentroid
+
+#pointDistance
+
+#geometryWithinRadius
+
+#area
+
+#centroid
+
+#simplify
+
+#destinationPoint
 
 def test():
     """
@@ -159,8 +174,10 @@ def test():
     diagonal_up = json.loads(diagonal_up_str)
     diagonal_down = json.loads(diagonal_down_str)
     far_away = json.loads(far_away_str)
-    print "intersect:%s" % ('True' if linestrings_intersect(diagonal_up, diagonal_down) else 'False')
-    print "not intersect:%s" % ('True' if linestrings_intersect(diagonal_up, far_away) else 'False')
+    print "two lines intersect:"
+    print linestrings_intersect(diagonal_up, diagonal_down)
+    print "two lines do not intersect:"
+    print linestrings_intersect(diagonal_up, far_away)
 
     #point in polygon
     in_str = '{"type": "Point", "coordinates": [5, 5]}'
@@ -169,8 +186,10 @@ def test():
     in_box = json.loads(in_str)
     out_box = json.loads(out_str)
     box = json.loads(box_str)
-    print "inbox : %s " % ('True' if point_in_polygon(in_box, box) else 'False')
-    print "outbox : %s" % ('True' if point_in_polygon(out_box, box) else 'False')
+    print "point inside box:  "
+    print point_in_polygon(in_box, box)
+    print "point outside box:"
+    print point_in_polygon(out_box, box)
 
     #point in multipolygon
     point_str = '{"type": "Point", "coordinates": [0.5, 0.5]}'
@@ -179,8 +198,10 @@ def test():
     point = json.loads(point_str)
     single_point = json.loads(single_point_str)
     multipoly = json.loads(multipoly_str)
-    print "multi_in : %s " % ('True' if point_in_multipolygon(point, multipoly) else 'False')
-    print "multi_out : %s" % ('True' if point_in_multipolygon(single_point, multipoly) else 'False')
+    print "point inside multipoly: "
+    print  point_in_multipolygon(point, multipoly)
+    print "point outside multipoly : "
+    print point_in_multipolygon(single_point, multipoly)
 
 
 if __name__ == '__main__':
