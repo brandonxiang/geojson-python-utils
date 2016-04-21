@@ -99,6 +99,8 @@ def point_in_polygon(point, poly):
     coords = [poly['coordinates']] if poly['type'] == 'Polygon' else poly['coordinates']
     inside_box = False
     for coord in coords:
+        if inside_box:
+            break
         if point_in_bbox(point, bbox_around_polycoords(coord)):
             inside_box = True
     if not inside_box:
@@ -106,10 +108,29 @@ def point_in_polygon(point, poly):
 
     inside_poly = False
     for coord in coords:
+        if inside_poly:
+            break
         if pnpoly(point['coordinates'][1], point['coordinates'][0], coord):
             inside_poly = True
-
     return inside_poly
+
+def point_in_multipolygon(point, multipoly):
+    """
+    valid whether the point is located in a mulitpolygon (donut polygon is not supported)
+
+    Keyword arguments:
+    point      -- point geojson object
+    multipoly  -- multipolygon geojson object
+
+    if(point inside multipoly) return true else false
+    """
+    coords_array = [multipoly['coordinates']] if multipoly.type == "MultiPolygon" else multipoly.coordinates
+
+    for coords in coords_array:
+        if point_in_polygon(point, coords):
+            return True
+
+    return False
 
 def number2radius(number):
     """
@@ -128,6 +149,7 @@ def test():
     """
     test for geojson-python-utils
     """
+    #linestrings intersect
     diagonal_up_str = '{ "type": "LineString","coordinates": [[0, 0], [10, 10]]}'
     diagonal_down_str = '{ "type": "LineString","coordinates": [[10, 0], [0, 10]]}'
     far_away_str = '{ "type": "LineString","coordinates": [[100, 100], [110, 110]]}'
@@ -137,6 +159,7 @@ def test():
     print "intersect:%s" % ('True' if linestrings_intersect(diagonal_up, diagonal_down) else 'False')
     print "not intersect:%s" % ('True' if linestrings_intersect(diagonal_up, far_away) else 'False')
 
+    #point in polygon
     in_str = '{"type": "Point", "coordinates": [5, 5]}'
     out_str = '{"type": "Point", "coordinates": [15, 15]}'
     box_str = '{"type": "Polygon","coordinates": [[ [0, 0], [10, 0], [10, 10], [0, 10] ]]}'
@@ -145,6 +168,17 @@ def test():
     box = json.loads(box_str)
     print "inbox : %s " % ('True' if point_in_polygon(in_box, box) else 'False')
     print "outbox : %s" % ('True' if point_in_polygon(out_box, box) else 'False')
+
+    #point in multipolygon
+    point_str = '{"type": "Point", "coordinates": [0.5, 0.5]}'
+    single_point_str = '{"type": "Point", "coordinates": [-1, -1]}'
+    multipoly_str = '{"type":"MultiPolygon","coordinates":[[[[0,0],[0,10],[10,10],[10,0],[0,0]]],[[[10,10],[10,20],[20,20],[20,10],[10,10]]]]}'
+    point = json.loads(point_str)
+    single_point = json.loads(single_point_str)
+    multipoly = json.loads(multipoly_str)
+    print "inbox : %s " % ('True' if point_in_multipolygon(point, multipoly) else 'False')
+    print "outbox : %s" % ('True' if point_in_multipolygon(single_point, multipoly) else 'False')
+
 
 if __name__ == '__main__':
     test()

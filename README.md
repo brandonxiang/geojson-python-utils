@@ -16,7 +16,7 @@ Keyword arguments:
 if(line1 intersects with other) return intersect point array else empty array
 
 ****
-###point_in_polygon
+###point in polygon
 
 valid whether the point is located in a polygon
 
@@ -27,3 +27,14 @@ Keyword arguments:
 - poly  -- polygon geojson object
 
 if(point inside poly) return true else false
+
+****
+###point in multipolygon
+
+valid whether the point is located in a mulitpolygon (donut polygon is not supported)
+
+Keyword arguments:
+point      -- point geojson object
+multipoly  -- multipolygon geojson object
+
+if(point inside multipoly) return true else false
