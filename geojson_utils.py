@@ -86,17 +86,7 @@ def pnpoly(x, y, coords):
     return inside
 
 
-def point_in_polygon(point, poly):
-    """
-    valid whether the point is located in a polygon
-
-    Keyword arguments:
-    point -- point geojson object
-    poly  -- polygon geojson object
-
-    if(point inside poly) return true else false
-    """
-    coords = [poly['coordinates']] if poly['type'] == 'Polygon' else poly['coordinates']
+def _point_in_polygon(point, coords):
     inside_box = False
     for coord in coords:
         if inside_box:
@@ -114,6 +104,19 @@ def point_in_polygon(point, poly):
             inside_poly = True
     return inside_poly
 
+def point_in_polygon(point, poly):
+    """
+    valid whether the point is located in a polygon
+
+    Keyword arguments:
+    point -- point geojson object
+    poly  -- polygon geojson object
+
+    if(point inside poly) return true else false
+    """
+    coords = [poly['coordinates']] if poly['type'] == 'Polygon' else poly['coordinates']
+    return _point_in_polygon(point, coords)
+
 def point_in_multipolygon(point, multipoly):
     """
     valid whether the point is located in a mulitpolygon (donut polygon is not supported)
@@ -124,10 +127,10 @@ def point_in_multipolygon(point, multipoly):
 
     if(point inside multipoly) return true else false
     """
-    coords_array = [multipoly['coordinates']] if multipoly.type == "MultiPolygon" else multipoly.coordinates
+    coords_array = [multipoly['coordinates']] if multipoly['type'] == "MultiPolygon" else multipoly['coordinates']
 
     for coords in coords_array:
-        if point_in_polygon(point, coords):
+        if _point_in_polygon(point, coords):
             return True
 
     return False
@@ -176,8 +179,8 @@ def test():
     point = json.loads(point_str)
     single_point = json.loads(single_point_str)
     multipoly = json.loads(multipoly_str)
-    print "inbox : %s " % ('True' if point_in_multipolygon(point, multipoly) else 'False')
-    print "outbox : %s" % ('True' if point_in_multipolygon(single_point, multipoly) else 'False')
+    print "multi_in : %s " % ('True' if point_in_multipolygon(point, multipoly) else 'False')
+    print "multi_out : %s" % ('True' if point_in_multipolygon(single_point, multipoly) else 'False')
 
 
 if __name__ == '__main__':
