@@ -1,3 +1,4 @@
+__doc__ = 'github: https://github.com/brandonxiang/geojson-python-utils'
 import math
 
 
@@ -23,20 +24,23 @@ def linestrings_intersect(line1, line2):
             b1_y = line2['coordinates'][j][0]
             b2_x = line2['coordinates'][j + 1][1]
             b2_y = line2['coordinates'][j + 1][0]
-            ua_t = (b2_x - b1_x) * (a1_y - b1_y) - (b2_y - b1_y) * (a1_x - b1_x)
-            ub_t = (a2_x - a1_x) * (a1_y - b1_y) - (a2_y - a1_y) * (a1_x - b1_x)
+            ua_t = (b2_x - b1_x) * (a1_y - b1_y) - \
+                (b2_y - b1_y) * (a1_x - b1_x)
+            ub_t = (a2_x - a1_x) * (a1_y - b1_y) - \
+                (a2_y - a1_y) * (a1_x - b1_x)
             u_b = (b2_y - b1_y) * (a2_x - a1_x) - (b2_x - b1_x) * (a2_y - a1_y)
             if not u_b == 0:
                 u_a = ua_t / u_b
                 u_b = ub_t / u_b
                 if 0 <= u_a and u_a <= 1 and 0 <= u_b and u_b <= 1:
-                    intersects.append({'type': 'Point', 'coordinates': [a1_x + u_a * (a2_x - a1_x), a1_y + u_a * (a2_y - a1_y)]})
+                    intersects.append({'type': 'Point', 'coordinates': [
+                                      a1_x + u_a * (a2_x - a1_x), a1_y + u_a * (a2_y - a1_y)]})
     # if len(intersects) == 0:
     #     intersects = False
     return intersects
 
 
-def bbox_around_polycoords(coords):
+def _bbox_around_polycoords(coords):
     """
     bounding box
     """
@@ -50,15 +54,15 @@ def bbox_around_polycoords(coords):
     return [min(x_all), min(y_all), max(x_all), max(y_all)]
 
 
-def point_in_bbox(point, bounds):
+def _point_in_bbox(point, bounds):
     """
     valid whether the point is inside the bounding box
     """
-    return not(point['coordinates'][1] < bounds[0] or point['coordinates'][1] > bounds[2] \
-     or point['coordinates'][0] < bounds[1] or point['coordinates'][0] > bounds[3])
+    return not(point['coordinates'][1] < bounds[0] or point['coordinates'][1] > bounds[2]
+               or point['coordinates'][0] < bounds[1] or point['coordinates'][0] > bounds[3])
 
 
-def pnpoly(x, y, coords):
+def _pnpoly(x, y, coords):
     """
     the algorithm to judge whether the point is located in polygon
     reference: https://www.ecse.rpi.edu/~wrf/Research/Short_Notes/pnpoly.html#Explanation
@@ -77,8 +81,8 @@ def pnpoly(x, y, coords):
     j = len(vert) - 1
 
     while i < len(vert):
-        if ((vert[i][0] > y) != (vert[j][0] > y)) and (x < (vert[j][1] - vert[i][1]) \
-         * (y - vert[i][0]) / (vert[j][0] - vert[i][0]) + vert[i][1]):
+        if ((vert[i][0] > y) != (vert[j][0] > y)) and (x < (vert[j][1] - vert[i][1])
+                                                       * (y - vert[i][0]) / (vert[j][0] - vert[i][0]) + vert[i][1]):
             inside = not inside
         j = i
         i += 1
@@ -91,7 +95,7 @@ def _point_in_polygon(point, coords):
     for coord in coords:
         if inside_box:
             break
-        if point_in_bbox(point, bbox_around_polycoords(coord)):
+        if _point_in_bbox(point, _bbox_around_polycoords(coord)):
             inside_box = True
     if not inside_box:
         return False
@@ -100,9 +104,10 @@ def _point_in_polygon(point, coords):
     for coord in coords:
         if inside_poly:
             break
-        if pnpoly(point['coordinates'][1], point['coordinates'][0], coord):
+        if _pnpoly(point['coordinates'][1], point['coordinates'][0], coord):
             inside_poly = True
     return inside_poly
+
 
 def point_in_polygon(point, poly):
     """
@@ -114,8 +119,10 @@ def point_in_polygon(point, poly):
 
     if(point inside poly) return true else false
     """
-    coords = [poly['coordinates']] if poly['type'] == 'Polygon' else poly['coordinates']
+    coords = [poly['coordinates']] if poly[
+        'type'] == 'Polygon' else poly['coordinates']
     return _point_in_polygon(point, coords)
+
 
 def point_in_multipolygon(point, multipoly):
     """
@@ -127,13 +134,15 @@ def point_in_multipolygon(point, multipoly):
 
     if(point inside multipoly) return true else false
     """
-    coords_array = [multipoly['coordinates']] if multipoly['type'] == "MultiPolygon" else multipoly['coordinates']
+    coords_array = [multipoly['coordinates']] if multipoly[
+        'type'] == "MultiPolygon" else multipoly['coordinates']
 
     for coords in coords_array:
         if _point_in_polygon(point, coords):
             return True
 
     return False
+
 
 def number2radius(number):
     """
@@ -144,7 +153,8 @@ def number2radius(number):
 
     return radius
     """
-    return number*math.pi /180
+    return number * math.pi / 180
+
 
 def number2degree(number):
     """
@@ -155,7 +165,8 @@ def number2degree(number):
 
     return degree
     """
-    return number* 180/math.pi
+    return number * 180 / math.pi
+
 
 def draw_circle(radius_in_meters, center_point, steps=15):
     """
@@ -170,18 +181,19 @@ def draw_circle(radius_in_meters, center_point, steps=15):
     steps = steps if steps > 15 else 15
     center = [center_point['coordinates'][1], center_point['coordinates'][0]]
     dist = (radius_in_meters / 1000) / 6371
-    #convert meters to radiant
+    # convert meters to radiant
     rad_center = [number2radius(center[0]), number2radius(center[1])]
     # 15 sided circle
     poly = []
     for step in range(0, steps):
         brng = 2 * math.pi * step / steps
-        lat = math.asin(math.sin(rad_center[0]) * math.cos(dist)+ \
-        math.cos(rad_center[0]) * math.sin(dist) * math.cos(brng))
-        lng = rad_center[1] + math.atan2(math.sin(brng) * math.sin(dist) \
-        * math.cos(rad_center[0]), math.cos(dist) - math.sin(rad_center[0]) * math.sin(lat))
+        lat = math.asin(math.sin(rad_center[0]) * math.cos(dist) +
+                        math.cos(rad_center[0]) * math.sin(dist) * math.cos(brng))
+        lng = rad_center[1] + math.atan2(math.sin(brng) * math.sin(dist)
+                                         * math.cos(rad_center[0]), math.cos(dist) - math.sin(rad_center[0]) * math.sin(lat))
         poly.append([number2degree(lng), number2degree(lat)])
     return {"type": "Polygon", "coordinates": [poly]}
+
 
 def rectangle_centroid(rectangle):
     """
@@ -201,6 +213,7 @@ def rectangle_centroid(rectangle):
     ywidth = ymax - ymin
     return {'type': 'Point', 'coordinates': [xmin + xwidth / 2, ymin + ywidth / 2]}
 
+
 def point_distance(point1, point2):
     """
     calculate the distance between two point on the sphere like google map
@@ -218,8 +231,8 @@ def point_distance(point1, point2):
     lat2 = point2['coordinates'][1]
     deg_lat = number2radius(lat2 - lat1)
     deg_lon = number2radius(lon2 - lon1)
-    a = math.pow(math.sin(deg_lat / 2), 2) + math.cos(number2radius(lat1))* \
-    math.cos(number2radius(lat2)) * math.pow(math.sin(deg_lon / 2), 2)
+    a = math.pow(math.sin(deg_lat / 2), 2) + math.cos(number2radius(lat1)) * \
+        math.cos(number2radius(lat2)) * math.pow(math.sin(deg_lon / 2), 2)
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     return (6371 * c) * 1000
 
@@ -239,8 +252,9 @@ def geometry_within_radius(geometry, center, radius):
         return point_distance(geometry, center) <= radius
     elif geometry['type'] == 'LineString' or geometry['type'] == 'Polygon':
         point = {}
-        #it's enough to check the exterior ring of the Polygon
-        coordinates = geometry['coordinates'][0] if geometry['type'] == 'Polygon' else geometry['coordinates']
+        # it's enough to check the exterior ring of the Polygon
+        coordinates = geometry['coordinates'][0] if geometry[
+            'type'] == 'Polygon' else geometry['coordinates']
 
         for coordinate in coordinates:
             point['coordinates'] = coordinate
@@ -248,11 +262,98 @@ def geometry_within_radius(geometry, center, radius):
                 return False
     return True
 
-#area
 
-#centroid
+def area(poly):
+    """
+    calculate the area of polygon
 
-#simplify
+    Keyword arguments:
+    poly -- polygon geojson object
 
-#destinationPoint
+    return polygon area
+    """
+    poly_area = 0
+    # TODO: polygon holes at coordinates[1]
+    points = poly['coordinates'][0]
+    j = len(points) - 1
+    count = len(points)
 
+    for i in range(0, count):
+        p1_x = points[i][1]
+        p1_y = points[i][0]
+        p2_x = points[j][1]
+        p2_y = points[j][0]
+
+        poly_area += p1_x * p2_y
+        poly_area -= p1_y * p2_x
+        j = i
+
+    poly_area /= 2
+    return poly_area
+
+
+def centroid(poly):
+    """
+    get the centroid of polygon
+    adapted from http://paulbourke.net/geometry/polyarea/javascript.txt
+
+    Keyword arguments:
+    poly -- polygon geojson object
+
+    return polygon centroid
+    """
+    f_total = 0
+    x_total = 0
+    y_total = 0
+    # TODO: polygon holes at coordinates[1]
+    points = poly['coordinates'][0]
+    j = len(points) - 1
+    count = len(points)
+
+    for i in range(0, count):
+        p1_x = points[i][1]
+        p1_y = points[i][0]
+        p2_x = points[j][1]
+        p2_y = points[j][0]
+
+        f_total = p1_x * p2_y - p2_x * p1_y
+        x_total += (p1_x + p2_x) * f_total
+        y_total += (p1_y + p2_y) * f_total
+        j = i
+
+    six_area = area(poly) * 6
+    return {'type': 'Point', 'coordinates': [y_total / six_area, x_total / six_area]}
+
+
+def destinationPoint(point, brng, dist):
+    """
+    Calculate a destination Point base on a base point and a distance
+
+    Keyword arguments:
+    pt   -- polygon geojson object
+    brng -- an angle in radius
+    dist -- distance between destination point and base point 
+
+    return destination point object
+
+    """
+    dist = dist / 6371  # convert dist to angular distance in radians
+    brng = number2radius(brng)
+
+    lon1 = number2radius(point['coordinates'][0])
+    lat1 = number2radius(point['coordinates'][1])
+
+    lat2 = math.asin(math.sin(lat1) * math.cos(dist) +
+                     math.cos(lat1) * math.sin(dist) * math.cos(brng))
+    lon2 = lon1 + math.atan2(math.sin(brng) * math.sin(dist) *
+                             math.cos(lat1), math.cos(dist) - math.sin(lat1) * math.sin(lat2))
+    lon2 = (lon2 + 3 * math.pi) % (2 * math.pi) - \
+        math.pi  # normalise to -180 degree +180 degree
+
+    return {'type': 'Point', 'coordinates': [number2degree(lon2), number2degree(lat2)]}
+
+
+# simplify
+
+
+# gaode

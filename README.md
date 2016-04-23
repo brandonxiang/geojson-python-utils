@@ -2,8 +2,22 @@
 
 This project is inspired by [geojson-js-utils](https://github.com/maxogden/geojson-js-utils). Geojson becomes more popular than before. These algorithms also are what I want to learn about, which may give you some inspiration.
 
+###Usage
+
+Copy the py file into your working file, and load `geojson_utils` into your py file.
+
+```
+from geojson_utils import linestrings_intersect
+from geojson_utils import point_in_polygon
+from geojson_utils import point_in_multipolygon
+from geojson_utils import draw_circle
+from geojson_utils import rectangle_centroid
+from geojson_utils import point_distance
+```
+
+
 ****
-###linestrings intersect
+###Linestrings Intersection
 
 To valid whether linestrings from geojson are intersected with each other.
 
@@ -15,7 +29,7 @@ Keyword arguments:
 if(line1 intersects with other) return intersect point array else empty array
 
 ****
-###point in polygon
+###Point in Polygon
 valid whether the point is located in a polygon
 
 Keyword arguments:
@@ -26,7 +40,7 @@ Keyword arguments:
 if(point inside poly) return true else false
 
 ****
-###point in multipolygon
+###Point in Multipolygon
 valid whether the point is located in a mulitpolygon (donut polygon is not supported)
 
 Keyword arguments:
@@ -37,7 +51,7 @@ Keyword arguments:
 if(point inside multipoly) return true else false
 
 ***
-### draw circle
+### Draw Circle
 get a circle shape polygon based on centerPoint and radius
 
 Keyword arguments:
@@ -47,7 +61,7 @@ Keyword arguments:
 if(point inside multipoly) return true else false
 
 ****
-### rectangle centroid
+### Rectangle Centroid
 get the centroid of the rectangle
 
 Keyword arguments:
@@ -57,7 +71,7 @@ return centroid
   
 
 ****
-### point distance
+### Distance between Two Points
 calculate the distance between two point on the sphere like google map
 reference http://www.movable-type.co.uk/scripts/latlong.html
 
@@ -69,7 +83,7 @@ if(point inside multipoly) return true else false
 
 
 ****
-###geometry within radius
+###Geometry within Radius
 valid whether point or linestring or polygon is inside a radius around a center
 
 Keyword arguments:
@@ -78,3 +92,34 @@ Keyword arguments:
 - radius    -- polygon geojson object
 
 if(geometry inside radius) return true else false
+
+****
+###Area
+calculate the area of polygon
+
+Keyword arguments:
+- poly -- polygon geojson object
+
+return polygon area
+
+****
+###Centroid
+get the centroid of polygon
+adapted from http://paulbourke.net/geometry/polyarea/javascript.txt
+
+Keyword arguments:
+poly -- polygon geojson object
+
+return polygon centroid
+
+****
+###Destination point
+
+Calculate a destination Point base on a base point and a distance
+
+Keyword arguments:
+pt   -- polygon geojson object
+brng -- an angle in radius
+dist -- distance between destination point and base point 
+
+return destination point object
