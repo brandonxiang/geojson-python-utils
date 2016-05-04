@@ -239,12 +239,12 @@ def point_distance(point1, point2):
 
 def geometry_within_radius(geometry, center, radius):
     """
-    valid whether point or linestring or polygon is inside a radius around a center
+    To valid whether point or linestring or polygon is inside a radius around a center
 
     Keyword arguments:
-    geometry  -- point geojson object
-    center    -- linestring geojson object
-    radius    -- polygon geojson object
+    geometry  -- point/linstring/polygon geojson object
+    center    -- point geojson object
+    radius    -- radius
 
     if(geometry inside radius) return true else false
     """
@@ -253,8 +253,7 @@ def geometry_within_radius(geometry, center, radius):
     elif geometry['type'] == 'LineString' or geometry['type'] == 'Polygon':
         point = {}
         # it's enough to check the exterior ring of the Polygon
-        coordinates = geometry['coordinates'][0] if geometry[
-            'type'] == 'Polygon' else geometry['coordinates']
+        coordinates = geometry['coordinates'][0] if geometry['type'] == 'Polygon' else geometry['coordinates']
 
         for coordinate in coordinates:
             point['coordinates'] = coordinate
@@ -325,19 +324,19 @@ def centroid(poly):
     return {'type': 'Point', 'coordinates': [y_total / six_area, x_total / six_area]}
 
 
-def destinationPoint(point, brng, dist):
+def destination_point(point, brng, dist):
     """
     Calculate a destination Point base on a base point and a distance
 
     Keyword arguments:
     pt   -- polygon geojson object
-    brng -- an angle in radius
-    dist -- distance between destination point and base point 
+    brng -- an angle in degrees
+    dist -- distance in Kilometer between destination and base point
 
     return destination point object
 
     """
-    dist = dist / 6371  # convert dist to angular distance in radians
+    dist = float(dist) / 6371  # convert dist to angular distance in radians
     brng = number2radius(brng)
 
     lon1 = number2radius(point['coordinates'][0])
@@ -347,8 +346,7 @@ def destinationPoint(point, brng, dist):
                      math.cos(lat1) * math.sin(dist) * math.cos(brng))
     lon2 = lon1 + math.atan2(math.sin(brng) * math.sin(dist) *
                              math.cos(lat1), math.cos(dist) - math.sin(lat1) * math.sin(lat2))
-    lon2 = (lon2 + 3 * math.pi) % (2 * math.pi) - \
-        math.pi  # normalise to -180 degree +180 degree
+    lon2 = (lon2 + 3 * math.pi) % (2 * math.pi) - math.pi  # normalise to -180 degree +180 degree
 
     return {'type': 'Point', 'coordinates': [number2degree(lon2), number2degree(lat2)]}
 

@@ -13,6 +13,8 @@ Copy `geojson_utils.py` into your working directory, and import the modules into
 from geojson_utils import linestrings_intersect
 ```
 
+##Example
+
 ###Linestrings Intersection
 
 To valid whether linestrings from geojson are intersected with each other.
@@ -125,6 +127,15 @@ print math.floor(point_distance(fairyland, navalbase))
 To valid whether point or linestring or polygon is inside a radius around a center
 
 ```
+from geojson_utils import geometry_within_radius
+
+center_point_str = '{"type": "Point", "coordinates":  [-122.260000705719, 37.80919060818706]}'
+check_point_str = '{"type": "Point", "coordinates": [-122.32083320617676, 37.78774223089045]}'
+center_point = json.loads(center_point_str)
+check_point = json.loads(check_point_str)
+
+print geometry_within_radius(check_point, center_point, 5853)
+#True
 ```
 
 
@@ -132,7 +143,7 @@ To valid whether point or linestring or polygon is inside a radius around a cent
 To calculate the area of polygon
 
 ```
- from geojson_utils import area
+from geojson_utils import area
  
 box_str = '{"type": "Polygon","coordinates": [[ [0, 0], [10, 0], [10, 10], [0, 10] ]]}'
 box = json.loads(box_str)
@@ -159,10 +170,15 @@ print centroid(box)
 To calculate a destination Point base on a base point and a distance
 
 ```
+from geojson_utils import destination_point
+
+startpoint_str = '{"type": "Point", "coordinates":  [-122.260000705719, 37.80919060818706]}'
+startpoint = json.loads(startpoint_str)
+
+print destination_point(startpoint, 180, 2000)
+#{'type': 'Point', 'coordinates': [-122.26000070571902, 19.822758489812447]}
 ```
 
-return destination point object
-
-##license
+##License
 
 [MIT](LICENSE)
