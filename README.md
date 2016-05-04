@@ -122,14 +122,14 @@ print math.floor(point_distance(fairyland, navalbase))
 
 
 ###Geometry within Radius
-valid whether point or linestring or polygon is inside a radius around a center
+To valid whether point or linestring or polygon is inside a radius around a center
 
 ```
 ```
 
 
 ###Area
-calculate the area of polygon
+To calculate the area of polygon
 
 ```
  from geojson_utils import area
@@ -142,7 +142,7 @@ print area(box)
 
 
 ###Centroid
-get the centroid of polygon
+To get the centroid of polygon
 adapted from http://paulbourke.net/geometry/polyarea/javascript.txt
 
 ```
@@ -156,8 +156,7 @@ print centroid(box)
 
 
 ###Destination point
-
-Calculate a destination Point base on a base point and a distance
+To calculate a destination Point base on a base point and a distance
 
 ```
 ```
