@@ -1,19 +1,11 @@
 import unittest
 import json
 import math
-from geojson_utils import linestrings_intersect
-from geojson_utils import point_in_polygon
-from geojson_utils import point_in_multipolygon
-from geojson_utils import draw_circle
-from geojson_utils import rectangle_centroid
-from geojson_utils import point_distance
-from geojson_utils import area
-from geojson_utils import centroid
-
 
 class Test(unittest.TestCase):
 
     def test_linestrings_intersect(self):
+        from geojson_utils import linestrings_intersect
         diagonal_up_str = '{ "type": "LineString","coordinates": [[0, 0], [10, 10]]}'
         diagonal_down_str = '{ "type": "LineString","coordinates": [[10, 0], [0, 10]]}'
         far_away_str = '{ "type": "LineString","coordinates": [[100, 100], [110, 110]]}'
@@ -24,6 +16,7 @@ class Test(unittest.TestCase):
         self.assertEquals(linestrings_intersect(diagonal_up, far_away), [])
 
     def test_point_in_polygon(self):
+        from geojson_utils import point_in_polygon
         in_str = '{"type": "Point", "coordinates": [5, 5]}'
         out_str = '{"type": "Point", "coordinates": [15, 15]}'
         box_str = '{"type": "Polygon","coordinates": [[ [0, 0], [10, 0], [10, 10], [0, 10] ]]}'
@@ -34,6 +27,7 @@ class Test(unittest.TestCase):
         self.assertFalse(point_in_polygon(out_box, box))
 
     def test_point_in_multipolygon(self):
+        from geojson_utils import point_in_multipolygon
         point_str = '{"type": "Point", "coordinates": [0.5, 0.5]}'
         single_point_str = '{"type": "Point", "coordinates": [-1, -1]}'
         multipoly_str = '{"type":"MultiPolygon","coordinates":[[[[0,0],[0,10],[10,10],[10,0],[0,0]]],[[[10,10],[10,20],[20,20],[20,10],[10,10]]]]}'
@@ -44,6 +38,7 @@ class Test(unittest.TestCase):
         self.assertFalse(point_in_multipolygon(single_point, multipoly))
 
     def test_drawCircle(self):
+        from geojson_utils import draw_circle
         pt_center = json.loads('{"type": "Point", "coordinates": [0, 0]}')
         self.assertEquals(
             len(draw_circle(10, pt_center)['coordinates'][0]), 15)
@@ -51,12 +46,14 @@ class Test(unittest.TestCase):
             len(draw_circle(10, pt_center, 50)['coordinates'][0]), 50)
 
     def test_rectangle_centroid(self):
+        from geojson_utils import rectangle_centroid
         box_str = '{"type": "Polygon","coordinates": [[[0, 0],[10, 0],[10, 10],[0, 10]]]}'
         box = json.loads(box_str)
         centroid = rectangle_centroid(box)
         self.assertEquals(centroid['coordinates'], [5, 5])
 
     def test_point_distance(self):
+        from geojson_utils import point_distance
         fairyland_str = '{"type": "Point", "coordinates": [-122.260000705719, 37.80919060818706]}'
         navalbase_str = '{"type": "Point", "coordinates": [-122.32083320617676, 37.78774223089045]}'
         fairyland = json.loads(fairyland_str)
@@ -65,11 +62,13 @@ class Test(unittest.TestCase):
             point_distance(fairyland, navalbase)), 5852)
 
     def test_area(self):
+        from geojson_utils import area
         box_str = '{"type": "Polygon","coordinates": [[ [0, 0], [10, 0], [10, 10], [0, 10] ]]}'
         box = json.loads(box_str)
         self.assertEquals(area(box), 100)
 
     def test_centroid(self):
+        from geojson_utils import centroid
         box_str = '{"type": "Polygon","coordinates": [[ [0, 0], [10, 0], [10, 10], [0, 10] ]]}'
         box = json.loads(box_str)
         self.assertEquals(centroid(box), {"type": "Point", "coordinates": [5, 5]})
