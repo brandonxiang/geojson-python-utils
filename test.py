@@ -12,8 +12,8 @@ class Test(unittest.TestCase):
         diagonal_up = json.loads(diagonal_up_str)
         diagonal_down = json.loads(diagonal_down_str)
         far_away = json.loads(far_away_str)
-        self.assertEquals(linestrings_intersect(diagonal_up, diagonal_down), [{'type': 'Point', 'coordinates': [0, 0]}])
-        self.assertEquals(linestrings_intersect(diagonal_up, far_away), [])
+        self.assertEqual(linestrings_intersect(diagonal_up, diagonal_down), [{'type': 'Point', 'coordinates': [0, 0]}])
+        self.assertEqual(linestrings_intersect(diagonal_up, far_away), [])
 
     def test_point_in_polygon(self):
         from geojson_utils import point_in_polygon
@@ -40,9 +40,9 @@ class Test(unittest.TestCase):
     def test_drawCircle(self):
         from geojson_utils import draw_circle
         pt_center = json.loads('{"type": "Point", "coordinates": [0, 0]}')
-        self.assertEquals(
+        self.assertEqual(
             len(draw_circle(10, pt_center)['coordinates'][0]), 15)
-        self.assertEquals(
+        self.assertEqual(
             len(draw_circle(10, pt_center, 50)['coordinates'][0]), 50)
 
     def test_rectangle_centroid(self):
@@ -50,7 +50,7 @@ class Test(unittest.TestCase):
         box_str = '{"type": "Polygon","coordinates": [[[0, 0],[10, 0],[10, 10],[0, 10]]]}'
         box = json.loads(box_str)
         centroid = rectangle_centroid(box)
-        self.assertEquals(centroid['coordinates'], [5, 5])
+        self.assertEqual(centroid['coordinates'], [5, 5])
 
     def test_point_distance(self):
         from geojson_utils import point_distance
@@ -58,7 +58,7 @@ class Test(unittest.TestCase):
         navalbase_str = '{"type": "Point", "coordinates": [-122.32083320617676, 37.78774223089045]}'
         fairyland = json.loads(fairyland_str)
         navalbase = json.loads(navalbase_str)
-        self.assertEquals(math.floor(
+        self.assertEqual(math.floor(
             point_distance(fairyland, navalbase)), 5852)
 
     def test_geometry_radius(self):
@@ -73,21 +73,28 @@ class Test(unittest.TestCase):
         from geojson_utils import area
         box_str = '{"type": "Polygon","coordinates": [[ [0, 0], [10, 0], [10, 10], [0, 10] ]]}'
         box = json.loads(box_str)
-        self.assertEquals(area(box), 100)
+        self.assertEqual(area(box), 100)
 
     def test_centroid(self):
         from geojson_utils import centroid
         box_str = '{"type": "Polygon","coordinates": [[ [0, 0], [10, 0], [10, 10], [0, 10] ]]}'
         box = json.loads(box_str)
-        self.assertEquals(centroid(box), {"type": "Point", "coordinates": [5, 5]})
+        self.assertEqual(centroid(box), {"type": "Point", "coordinates": [5, 5]})
 
     def test_destination_point(self):
         from geojson_utils import destination_point
         startpoint_str = '{"type": "Point", "coordinates":  [-122.260000705719, 37.80919060818706]}'
         startpoint = json.loads(startpoint_str)
-        self.assertEquals(destination_point(startpoint, 180, 2000)["coordinates"][0], -122.26000070571902)
+        self.assertEqual(destination_point(startpoint, 180, 2000)["coordinates"][0], -122.26000070571902)
 
-
+    def test_distance_ellipsode(self):
+        from geojson_utils import point_distance_ellipsode
+        fairyland_str = '{"type": "Point", "coordinates": [-122.260000705719, 37.80919060818706]}'
+        navalbase_str = '{"type": "Point", "coordinates": [-122.32083320617676, 37.78774223089045]}'
+        fairyland = json.loads(fairyland_str)
+        navalbase = json.loads(navalbase_str)
+        print point_distance_ellipsode(fairyland,navalbase)
+        
 
 if __name__ == '__main__':
     unittest.main()
