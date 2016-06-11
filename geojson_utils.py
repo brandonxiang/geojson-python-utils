@@ -216,14 +216,14 @@ def rectangle_centroid(rectangle):
 
 def point_distance(point1, point2):
     """
-    calculate the distance between two point on the sphere like google map
+    calculate the distance between two points on the sphere like google map
     reference http://www.movable-type.co.uk/scripts/latlong.html
 
     Keyword arguments:
     point1  -- point one geojson object
     point2  -- point two geojson object
 
-    if(point inside multipoly) return true else false
+    return distance
     """
     lon1 = point1['coordinates'][0]
     lat1 = point1['coordinates'][1]
@@ -235,6 +235,31 @@ def point_distance(point1, point2):
         math.cos(number2radius(lat2)) * math.pow(math.sin(deg_lon / 2), 2)
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     return (6371 * c) * 1000
+    
+def point_distance_ellipsode(point1,point2):
+    """
+    calculate the distance between two points on the ellipsode based on point1
+    
+    Keyword arguments:
+    point1  -- point one geojson object
+    point2  -- point two geojson object
+    
+    return distance
+    """
+    a = 6378137
+    f = 1/298.25722
+    b = a - a*f
+    e = math.sqrt((a*a-b*b)/(a*a))
+    lon1 = point1['coordinates'][0]
+    lat1 = point1['coordinates'][1]
+    lon2 = point1['coordinates'][0]
+    lat2 = point2['coordinates'][1]
+    M = a*(1-e*e)*math.pow(1-math.pow(e*math.sin(number2radius(lat1)),2),-1.5)
+    N = a/(math.pow(1-math.pow(e*math.sin(number2radius(lat1)),2),0.5))
+    
+    distance_lat = M*number2radius(lat2-lat1)
+    distance_lon = N*math.cos(number2radius(lat1))*(lon2-lon1)*3600*math.sin(1/3600*math.pi/180)
+    return math.sqrt(distance_lat*distance_lat+distance_lon*distance_lon)
 
 
 def geometry_within_radius(geometry, center, radius):
