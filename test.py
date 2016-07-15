@@ -1,6 +1,8 @@
+from __future__ import print_function
 import unittest
 import json
 import math
+
 
 class Test(unittest.TestCase):
 
@@ -12,7 +14,7 @@ class Test(unittest.TestCase):
         diagonal_up = json.loads(diagonal_up_str)
         diagonal_down = json.loads(diagonal_down_str)
         far_away = json.loads(far_away_str)
-        self.assertEqual(linestrings_intersect(diagonal_up, diagonal_down), [{'type': 'Point', 'coordinates': [0, 0]}])
+        self.assertEqual(linestrings_intersect(diagonal_up, diagonal_down), [{'type': 'Point', 'coordinates': [5, 5]}])
         self.assertEqual(linestrings_intersect(diagonal_up, far_away), [])
 
     def test_point_in_polygon(self):
@@ -93,7 +95,7 @@ class Test(unittest.TestCase):
         navalbase_str = '{"type": "Point", "coordinates": [-122.32083320617676, 37.78774223089045]}'
         fairyland = json.loads(fairyland_str)
         navalbase = json.loads(navalbase_str)
-        print point_distance_ellipsode(fairyland,navalbase)
+        print(point_distance_ellipsode(fairyland,navalbase)) 
         
 
 if __name__ == '__main__':
