@@ -492,3 +492,4 @@ def wgs2gcj(geometry):
 
     return geometry
 
+
