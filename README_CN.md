@@ -7,7 +7,9 @@ https://github.com/brandonxiang/geojson-python-utils
 
 随着geojson变得越来越流行，需要给geojson一些具体的数据操作。我在写这段库的工程中也是学习的过程，希望也能给你的GIS学习一点点帮助。
 
-[English DOC](README)
+##英文文档
+
+[English DOC](README.md)
 
 ##使用方法
 

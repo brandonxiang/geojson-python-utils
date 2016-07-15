@@ -4,7 +4,9 @@
 
 This project is inspired by [geojson-js-utils](https://github.com/maxogden/geojson-js-utils). Geojson becomes more popular than before. These algorithms also are what I want to learn about, which may give you some inspiration.
 
-[Chinese Doc](README_CN)
+## Chinese Doc
+
+[中文文档](README_CN.md)
 
 ##Usage
 
