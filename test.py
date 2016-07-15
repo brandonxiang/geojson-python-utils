@@ -97,6 +97,16 @@ class Test(unittest.TestCase):
         navalbase = json.loads(navalbase_str)
         print(point_distance_ellipsode(fairyland,navalbase)) 
         
+    def test_json_featurecollection(self):
+        from geojson_utils import join_featurecollection
+        with open('tests/first.json','r') as fp:
+            first = json.load(fp)
+        with open('tests/second.json','r') as fp:
+            second = json.load(fp)
+        with open('tests/result.json','r') as fp:
+            result = json.load(fp)
+        self.assertEqual(join_featurecollection(first,second),result)
+    
 
 if __name__ == '__main__':
     unittest.main()

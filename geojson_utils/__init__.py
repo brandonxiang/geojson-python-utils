@@ -3,3 +3,4 @@ __author__ = 'brandonxiang'
 
 from .geojson_utils import *
 from .geojson_trans import *
+from .multi_json import *
