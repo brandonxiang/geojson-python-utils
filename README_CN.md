@@ -1,4 +1,4 @@
-#Geojson笔记二：geojson-python-util
+# Geojson笔记二：geojson-python-util
 
 > 源码github地址在此，记得点星：
 https://github.com/brandonxiang/geojson-python-utils
@@ -7,11 +7,11 @@ https://github.com/brandonxiang/geojson-python-utils
 
 随着geojson变得越来越流行，需要给geojson一些具体的数据操作。我在写这段库的工程中也是学习的过程，希望也能给你的GIS学习一点点帮助。
 
-##英文文档
+## 英文文档
 
 [English DOC](README.md)
 
-##使用方法
+## 使用方法
 
 将脚本`geojson_utils.py`复制到你的文件夹中，然后输入：
 
@@ -19,7 +19,7 @@ https://github.com/brandonxiang/geojson-python-utils
 from geojson_utils import linestrings_intersect
 ```
 
-##例子
+## 例子
 
 ###Linestrings Intersection（两线的交点）
 验证两条线是否相交并求出交点。[原理]( http://www.kevlindev.com/gui/math/intersection/Intersection.js)
@@ -40,7 +40,7 @@ print linestrings_intersect(diagonal_up, far_away)
 #[]
 ```
 
-###Point in Polygon（点是否在多边形内）
+### Point in Polygon（点是否在多边形内）
 判断点是否在多边形内部。原理大致如下：
 - 先找到多边形的外包矩形
 - 判断点是否在外包矩形内部，不在则排除在外，在则继续判断
@@ -63,7 +63,7 @@ point_in_polygon(out_box, box)
 ```
 
 
-###Point in Multipolygon（点是否在多个多边形内）
+### Point in Multipolygon（点是否在多个多边形内）
 判断点是否在多个多边形内
 
 ```
@@ -130,7 +130,7 @@ print math.floor(point_distance(fairyland, navalbase))
 
 
 
-###Geometry within Radius（几何体在半径内部）
+### Geometry within Radius（几何体在半径内部）
 判断点线面是否在某点半价内
 
 ```
@@ -146,7 +146,7 @@ print geometry_within_radius(check_point, center_point, 5853)
 ```
 
 
-###Area（面积）
+### Area（面积）
 求多边形面积
 
 ```
@@ -159,7 +159,7 @@ print area(box)
 ```
 
 
-###Centroid（中心点）
+### Centroid（中心点）
 多边形中心点
 adapted from http://paulbourke.net/geometry/polyarea/javascript.txt
 
@@ -173,7 +173,7 @@ print centroid(box)
 ```
 
 
-###Destination point（终点）
+### Destination point（终点）
 通过起点，距离和角度来计算终点
 
 ```

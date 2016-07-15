@@ -8,7 +8,7 @@ This project is inspired by [geojson-js-utils](https://github.com/maxogden/geojs
 
 [中文文档](README_CN.md)
 
-##Usage
+## Usage
 
 Copy `geojson_utils.py` into your working directory, and import the modules into your py file.
 
@@ -16,9 +16,9 @@ Copy `geojson_utils.py` into your working directory, and import the modules into
 from geojson_utils import linestrings_intersect
 ```
 
-##Example
+## Example
 
-###Linestrings Intersection
+### Linestrings Intersection
 
 To valid whether linestrings from geojson are intersected with each other.
 
@@ -38,7 +38,7 @@ print linestrings_intersect(diagonal_up, far_away)
 #[]
 ```
 
-###Point in Polygon
+### Point in Polygon
 To valid whether the point is located in a polygon
 
 ```
@@ -58,7 +58,7 @@ point_in_polygon(out_box, box)
 ```
 
 
-###Point in Multipolygon
+### Point in Multipolygon
 To valid whether the point is located in a mulitpolygon (donut polygon is not supported)
 
 ```
@@ -126,7 +126,7 @@ print math.floor(point_distance(fairyland, navalbase))
 
 
 
-###Geometry within Radius
+### Geometry within Radius
 To valid whether point or linestring or polygon is inside a radius around a center
 
 ```
@@ -142,7 +142,7 @@ print geometry_within_radius(check_point, center_point, 5853)
 ```
 
 
-###Area
+### Area
 To calculate the area of polygon
 
 ```
@@ -155,7 +155,7 @@ print area(box)
 ```
 
 
-###Centroid
+### Centroid
 To get the centroid of polygon
 adapted from http://paulbourke.net/geometry/polyarea/javascript.txt
 
@@ -169,7 +169,7 @@ print centroid(box)
 ```
 
 
-###Destination point
+### Destination point
 To calculate a destination Point base on a base point and a distance
 
 ```
@@ -182,14 +182,14 @@ print destination_point(startpoint, 180, 2000)
 #{'type': 'Point', 'coordinates': [-122.26000070571902, 19.822758489812447]}
 ```
 
-##TODO
+## TODO
 
 [TODO](TODO,md)
 
-##Development 
+## Development 
 
 On the develop branch
 
-##License
+## License
 
 [MIT](LICENSE)
