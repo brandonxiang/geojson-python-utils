@@ -179,6 +179,10 @@ print destination_point(startpoint, 180, 2000)
 #{'type': 'Point', 'coordinates': [-122.26000070571902, 19.822758489812447]}
 ```
 
+##TODO
+
+- Make a __init__ file to seperate geojson_utils
+
 ##License
 
 [MIT](LICENSE)

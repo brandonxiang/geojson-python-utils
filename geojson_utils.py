@@ -1,5 +1,6 @@
 __doc__ = 'github: https://github.com/brandonxiang/geojson-python-utils'
 import math
+from coordTransform_utils import wgs84togcj02
 
 
 def linestrings_intersect(line1, line2):
@@ -453,5 +454,16 @@ def simplify(source, kink=20):
 
     return map(lambda o:  {"type": "Point","coordinates": [o.lng, o.lat]}, r)
 
+def wgs2gcj(geometry):
+    """
+    convert wgs84 to gcj
+    referencing by https://github.com/wandergis/coordTransform_py
+    """
+    # TODO: point linestring point
+    if geometry['type'] == 'MultiLineString':
+        coordinates = geometry['coordinates']
+        for line in coordinates:
+            line[0], line[1] = wgs84togcj02(line[0], line[1])
 
-# gaode
+    return geometry
+
