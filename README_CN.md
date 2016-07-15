@@ -1,24 +1,26 @@
-# geojson-python-utils
+#Geojson笔记二：geojson-python-util
 
-> JavaScript Version: [geojson-js-utils](https://github.com/maxogden/geojson-js-utils)
+> 源码github地址在此，记得点星：
+https://github.com/brandonxiang/geojson-python-utils
 
-This project is inspired by [geojson-js-utils](https://github.com/maxogden/geojson-js-utils). Geojson becomes more popular than before. These algorithms also are what I want to learn about, which may give you some inspiration.
+> 该项目是geojson-js-util的python实现
 
-[Chinese Doc](README_CN)
+随着geojson变得越来越流行，需要给geojson一些具体的数据操作。我在写这段库的工程中也是学习的过程，希望也能给你的GIS学习一点点帮助。
 
-##Usage
+[English DOC](README)
 
-Copy `geojson_utils.py` into your working directory, and import the modules into your py file.
+##使用方法
+
+将脚本`geojson_utils.py`复制到你的文件夹中，然后输入：
 
 ```
 from geojson_utils import linestrings_intersect
 ```
 
-##Example
+##例子
 
-###Linestrings Intersection
-
-To valid whether linestrings from geojson are intersected with each other.
+###Linestrings Intersection（两线的交点）
+验证两条线是否相交并求出交点。[原理]( http://www.kevlindev.com/gui/math/intersection/Intersection.js)
 
 ```
 from geojson_utils import linestrings_intersect
@@ -36,8 +38,11 @@ print linestrings_intersect(diagonal_up, far_away)
 #[]
 ```
 
-###Point in Polygon
-To valid whether the point is located in a polygon
+###Point in Polygon（点是否在多边形内）
+判断点是否在多边形内部。原理大致如下：
+- 先找到多边形的外包矩形
+- 判断点是否在外包矩形内部，不在则排除在外，在则继续判断
+- 算法计算点是否在多边形内，[原理](https://www.ecse.rpi.edu/~wrf/Research/Short_Notes/pnpoly.html#Explanation)
 
 ```
 from geojson_utils import point_in_polygon
@@ -56,8 +61,8 @@ point_in_polygon(out_box, box)
 ```
 
 
-###Point in Multipolygon
-To valid whether the point is located in a mulitpolygon (donut polygon is not supported)
+###Point in Multipolygon（点是否在多个多边形内）
+判断点是否在多个多边形内
 
 ```
 from geojson_utils import point_in_multipolygon
@@ -76,8 +81,8 @@ print point_in_multipolygon(single_point, multipoly)
 ```
 
 
-### Draw Circle
-To get a circle shape polygon based on centerPoint and radius
+### Draw Circle（画圆）
+通过一个中心点和半径获得一个圆形的图形
 
 ```
 from geojson_utils import draw_circle
@@ -91,8 +96,8 @@ print len(draw_circle(10, pt_center, 50)['coordinates'][0])
 ```
 
 
-### Rectangle Centroid
-To get the centroid of the rectangle
+### Rectangle Centroid（矩形的中心点）
+取出矩形的中心点
 
 ```
 from geojson_utils import centroid
@@ -104,11 +109,10 @@ centroid = rectangle_centroid(box)
 print centroid['coordinates']
 #[5, 5]
 ```
-  
-
-
-### Distance between Two Points
-To calculate the distance between two point on the sphere like google map (reference http://www.movable-type.co.uk/scripts/latlong.html)
+ 
+### Distance between Two Points（两个点的大地距离）
+两点的互联网球面距离
+(参考 http://www.movable-type.co.uk/scripts/latlong.html)，注意这个是球型距离，非大地陀球距离
 
 ```
 from geojson_utils import point_distance
@@ -124,8 +128,8 @@ print math.floor(point_distance(fairyland, navalbase))
 
 
 
-###Geometry within Radius
-To valid whether point or linestring or polygon is inside a radius around a center
+###Geometry within Radius（几何体在半径内部）
+判断点线面是否在某点半价内
 
 ```
 from geojson_utils import geometry_within_radius
@@ -140,8 +144,8 @@ print geometry_within_radius(check_point, center_point, 5853)
 ```
 
 
-###Area
-To calculate the area of polygon
+###Area（面积）
+求多边形面积
 
 ```
 from geojson_utils import area
@@ -153,8 +157,8 @@ print area(box)
 ```
 
 
-###Centroid
-To get the centroid of polygon
+###Centroid（中心点）
+多边形中心点
 adapted from http://paulbourke.net/geometry/polyarea/javascript.txt
 
 ```
@@ -167,8 +171,8 @@ print centroid(box)
 ```
 
 
-###Destination point
-To calculate a destination Point base on a base point and a distance
+###Destination point（终点）
+通过起点，距离和角度来计算终点
 
 ```
 from geojson_utils import destination_point
@@ -180,10 +184,4 @@ print destination_point(startpoint, 180, 2000)
 #{'type': 'Point', 'coordinates': [-122.26000070571902, 19.822758489812447]}
 ```
 
-##TODO
-
-- Make a __init__ file to seperate geojson_utils
-
-##License
-
-[MIT](LICENSE)
+转载，请表明出处。[总目录Awesome GIS](http://www.jianshu.com/p/3b3efa92dd6d)
