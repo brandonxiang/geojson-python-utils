@@ -252,7 +252,7 @@ def point_distance_ellipsode(point1,point2):
     e = math.sqrt((a*a-b*b)/(a*a))
     lon1 = point1['coordinates'][0]
     lat1 = point1['coordinates'][1]
-    lon2 = point1['coordinates'][0]
+    lon2 = point2['coordinates'][0]
     lat2 = point2['coordinates'][1]
     M = a*(1-e*e)*math.pow(1-math.pow(e*math.sin(number2radius(lat1)),2),-1.5)
     N = a/(math.pow(1-math.pow(e*math.sin(number2radius(lat1)),2),0.5))

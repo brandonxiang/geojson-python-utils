@@ -63,6 +63,14 @@ class Test(unittest.TestCase):
         self.assertEqual(math.floor(
             point_distance(fairyland, navalbase)), 5852)
 
+    def test_distance_ellipsode(self):
+        from geojson_utils import point_distance_ellipsode
+        fairyland_str = '{"type": "Point", "coordinates": [-122.260000705719, 37.80919060818706]}'
+        navalbase_str = '{"type": "Point", "coordinates": [-122.32083320617676, 37.78774223089045]}'
+        fairyland = json.loads(fairyland_str)
+        navalbase = json.loads(navalbase_str)
+        self.assertEqual(math.floor(point_distance_ellipsode(fairyland,navalbase)),5862) 
+
     def test_geometry_radius(self):
         from geojson_utils import geometry_within_radius
         center_point_str = '{"type": "Point", "coordinates":  [-122.260000705719, 37.80919060818706]}'
@@ -89,14 +97,6 @@ class Test(unittest.TestCase):
         startpoint = json.loads(startpoint_str)
         self.assertEqual(destination_point(startpoint, 180, 2000)["coordinates"][0], -122.26000070571902)
 
-    def test_distance_ellipsode(self):
-        from geojson_utils import point_distance_ellipsode
-        fairyland_str = '{"type": "Point", "coordinates": [-122.260000705719, 37.80919060818706]}'
-        navalbase_str = '{"type": "Point", "coordinates": [-122.32083320617676, 37.78774223089045]}'
-        fairyland = json.loads(fairyland_str)
-        navalbase = json.loads(navalbase_str)
-        print(point_distance_ellipsode(fairyland,navalbase)) 
-        
     def test_json_featurecollection(self):
         from geojson_utils import join_featurecollection
         with open('tests/first.json','r') as fp:
