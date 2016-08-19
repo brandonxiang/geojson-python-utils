@@ -95,7 +95,7 @@ class Test(unittest.TestCase):
         navalbase_str = '{"type": "Point", "coordinates": [-122.32083320617676, 37.78774223089045]}'
         fairyland = json.loads(fairyland_str)
         navalbase = json.loads(navalbase_str)
-        print(point_distance_ellipsode(fairyland,navalbase)) 
+        self.assertAlmostEqual(math.floor(point_distance_ellipsode(fairyland,navalbase)),2380) 
         
     def test_json_featurecollection(self):
         from geojson_utils import join_featurecollection
@@ -107,6 +107,15 @@ class Test(unittest.TestCase):
             result = json.load(fp)
         self.assertEqual(join_featurecollection(first,second),result)
     
+    def test_convertor(self):
+        from geojson_utils import convertor
+        with open('tests/province_wgs.geojson', encoding='utf-8') as fp:
+            geojson = json.load(fp)
+            features = geojson['features']
+            for feature in features:
+                origin = feature['geometry']['coordinates'][0][0][0]
+                result = convertor(feature['geometry'])
+                self.assertNotEqual(origin,result['coordinates'][0][0][0])
 
 if __name__ == '__main__':
     unittest.main()
