@@ -25,13 +25,24 @@ def convertor(geometry, method="wgs2gcj"):
     convert wgs84 to gcj
     referencing by https://github.com/wandergis/coordTransform_py
     """
-    # TODO: point linestring point
-    if geometry['type'] == 'MultiLineString':
+    if geometry['type'] == 'Point':
+        coords = geometry['coordinates']
+        coords[0], coords[1] = methods[method](coords[0], coords[1])
+    elif geometry['type'] == 'LineString' or geometry['type'] == 'MutliPoint':
         coordinates = geometry['coordinates']
-        for lines in coordinates:
-            for line in lines:
-                line[0], line[1] = methods[method](line[0], line[1])
-
+        for coords in coordinates:
+            coords[0], coords[1] = methods[method](coords[0], coords[1])
+    elif geometry['type'] == 'Polygon' or geometry['type'] == 'MultiLineString':
+        coordinates = geometry['coordinates']
+        for rings in coordinates:
+            for coords in rings:
+                coords[0], coords[1] = methods[method](coords[0], coords[1])
+    elif geometry['type'] == 'MultiPolygon':
+        coordinates = geometry['coordinates']
+        for rings in coordinates:
+            for lines in rings:
+                for coords in lines:
+                    coords[0], coords[1] = methods[method](coords[0], coords[1])
     return geometry
 
 
