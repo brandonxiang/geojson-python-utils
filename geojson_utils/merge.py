@@ -1,4 +1,4 @@
-def join_featurecollection(*jsons):
+def merge_featurecollection(*jsons):
     features = []
     for json in jsons:
         if json['type'] == 'FeatureCollection':

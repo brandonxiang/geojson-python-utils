@@ -97,15 +97,15 @@ class Test(unittest.TestCase):
         navalbase = json.loads(navalbase_str)
         self.assertAlmostEqual(math.floor(point_distance_ellipsode(fairyland,navalbase)),2380) 
         
-    def test_json_featurecollection(self):
-        from geojson_utils import join_featurecollection
+    def test_featurecollection(self):
+        from geojson_utils import merge_featurecollection
         with open('tests/first.json','r') as fp:
             first = json.load(fp)
         with open('tests/second.json','r') as fp:
             second = json.load(fp)
         with open('tests/result.json','r') as fp:
             result = json.load(fp)
-        self.assertEqual(join_featurecollection(first,second),result)
+        self.assertEqual(merge_featurecollection(first,second), result)
     
     def test_convertor(self):
         from geojson_utils import convertor
