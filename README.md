@@ -16,6 +16,12 @@ Copy `geojson_utils.py` into your working directory, and import the modules into
 from geojson_utils import linestrings_intersect
 ```
 
+or install
+
+```
+pip install geojson_utils
+```
+
 ## Example
 
 ### Linestrings Intersection
