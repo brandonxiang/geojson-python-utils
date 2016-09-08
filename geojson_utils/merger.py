@@ -1,5 +1,6 @@
 import math
 from copy import deepcopy
+from geojson import Point,Feature,FeatureCollection
 from geojson_utils import point_distance
 
 def merge_featurecollection(*jsons):
@@ -77,10 +78,33 @@ def get_endpoint_from_points(points):
                     result['features'].remove(points['features'][i])
                     count += 1
                     break
-    print(count)
     return result
 
 
-def get_endpoint_from_linestring(linesting):
-    pass
+def get_endpoint_from_linestring(linestrings):
+    """
+    """
+    points = get_bothend_from_linestring(linestrings)
+    return get_endpoint_from_points(points)
+
+def get_bothend_from_linestring(linestrings):
+    """
+
+    """
+    points = []
+
+    for linestring in linestrings['features']:
+        coord = linestring['geometry']['coordinates']
+        properties = linestring['properties']
+        first = coord[0]
+        first_feat = get_point_feature(first, properties)
+        last = coord[len(coord)-1]
+        last_feat = get_point_feature(last, properties)
+        points.append(first_feat)
+        points.append(last_feat)
+    return FeatureCollection(points)
+
+def get_point_feature(coord, properties):
+    return Feature(geometry=Point(coord), properties=properties)
+
 
