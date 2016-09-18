@@ -188,6 +188,54 @@ print destination_point(startpoint, 180, 2000)
 #{'type': 'Point', 'coordinates': [-122.26000070571902, 19.822758489812447]}
 ```
 
+### Merge Featurecollection geojson 
+
+To merge features into one featurecollection
+
+```
+from geojson_utils import merge_featurecollection
+with open('tests/first.json','r') as fp:
+    first = json.load(fp)
+with open('tests/second.json','r') as fp:
+    second = json.load(fp)
+with open('tests/result.json','r') as fp:
+    result = json.load(fp)
+merge_featurecollection(first,second)
+```
+
+### Simplify other point
+
+Simplify the point featurecollection of poi with another point features accoording by distance.
+
+Attention: point featurecollection only
+
+## Conversion between wgs84, gcj02, bd09
+
+Conversion between wgs84, gcj02 and bd09
+
+Parameter One: geojson geometry
+
+Parameter Two: 
+
+- **wgs2gcj** coordinates conversion from wgs84 to gcj02  
+- **gcj2wgs** coordinates conversion from gcj02 to wgs84 
+- **wgs2bd** coordinates conversion from wgs84 to bd09 
+- **bd2wgs** coordinates conversion from bd09 to wgs84 
+- **gcj2bd** coordinates conversion from gcj02 to bd09 
+- **bd2gcj** coordinates conversion from bd09 to gcj02 
+
+
+```
+from geojson_utils import convertor
+with open('tests/province_wgs.geojson', encoding='utf-8') as fp:
+    geojson = json.load(fp)
+    features = geojson['features']
+    for feature in features:
+        origin = feature['geometry']['coordinates'][0][0][0]
+        result = convertor(feature['geometry'])
+```
+
+
 ## TODO
 
 [TODO](TODO,md)
