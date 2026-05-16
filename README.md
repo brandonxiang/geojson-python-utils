@@ -200,7 +200,7 @@ The function preserves the first and last point and keeps intermediate points wh
 
 ## Coordinate Conversion
 
-`convertor()` mutates the input geometry and returns it.
+`convertor()` supports Geometry, Feature, FeatureCollection, and GeometryCollection inputs. It mutates the input by default for backwards compatibility; pass `inplace=False` to return a converted copy.
 
 | Method | Conversion |
 | --- | --- |
@@ -220,9 +220,15 @@ with open("tests/province_wgs.geojson", encoding="utf-8") as fp:
     geojson = json.load(fp)
 
 for feature in geojson["features"]:
-    converted = convertor(feature["geometry"], method="wgs2gcj")
-    print(converted["type"])
+converted = convertor(feature["geometry"], method="wgs2gcj")
+print(converted["type"])
 ```
+
+```python
+converted = convertor(geojson, method="gcj2bd", inplace=False)
+```
+
+The coordinate-transform layer keeps the base install lightweight. EPSG/projection based transforms can be added later behind an optional extra such as `geojson_utils[crs]`.
 
 ## Format Conversion API
 
