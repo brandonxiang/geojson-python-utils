@@ -1,25 +1,37 @@
 # geojson-python-utils
 
-Python helper functions for common GeoJSON geometry tasks: intersection checks, point-in-polygon tests, distance calculations, polygon metrics, coordinate conversion, feature collection merging, and point simplification.
+Python utilities for working with GeoJSON dictionaries. The package covers common geometry checks, distance calculations, polygon helpers, coordinate conversion, FeatureCollection utilities, and point-line simplification.
 
-This project started as a Python port inspired by [geojson-js-utils](https://github.com/maxogden/geojson-js-utils).
+The project began as a Python port inspired by [geojson-js-utils](https://github.com/maxogden/geojson-js-utils). It now targets Python 3.8+ and ships inline type annotations.
+
+## Why This Package
+
+- Works with plain Python dictionaries that follow the GeoJSON shape.
+- Keeps dependencies small; `requests` is only used by the optional geocoding helper.
+- Includes typed public functions and a `py.typed` marker for downstream type checkers.
+- Provides tested helpers for common GIS tasks without requiring a full geospatial stack.
 
 ## Features
 
-- LineString intersection detection
-- Point-in-Polygon and Point-in-MultiPolygon checks
-- Circle polygon generation from a center point and radius
-- Polygon area and centroid helpers
-- Spherical and ellipsoidal point distance calculations
-- Radius checks for Point, LineString, and Polygon geometries
-- Destination point calculation from bearing and distance
-- FeatureCollection merging and endpoint helpers
-- Point-array simplification with a meter-based tolerance
-- Coordinate conversion between WGS84, GCJ-02, and BD-09
+- LineString intersection detection.
+- Point-in-Polygon and Point-in-MultiPolygon checks.
+- Circle polygon generation from a center point and radius.
+- Polygon area, centroid, and rectangle centroid helpers.
+- Spherical and ellipsoidal distance calculations.
+- Radius checks for Point, LineString, and Polygon geometries.
+- Destination point calculation from bearing and distance.
+- FeatureCollection merging and endpoint extraction.
+- Point array simplification with a meter-based tolerance.
+- Coordinate conversion between WGS84, GCJ-02, and BD-09.
+
+## Requirements
+
+- Python 3.8 or newer.
+- `requests>=2.9.1`.
+
+Python 2 is not supported.
 
 ## Installation
-
-geojson-python-utils supports Python 3.8 and newer. The current codebase is typed for Python 3 and is not intended to support Python 2.
 
 ```bash
 pip install geojson_utils
@@ -30,7 +42,7 @@ You can also copy the `geojson_utils/` package into a project and import from it
 ## Quick Start
 
 ```python
-from geojson_utils import point_in_polygon, point_distance
+from geojson_utils import point_distance, point_in_polygon
 
 point = {"type": "Point", "coordinates": [5, 5]}
 polygon = {
@@ -46,9 +58,7 @@ naval_base = {"type": "Point", "coordinates": [-122.32083320617676, 37.787742230
 print(point_distance(oakland, naval_base))
 ```
 
-All functions accept plain Python dictionaries shaped like GeoJSON objects. Most helpers return plain GeoJSON dictionaries as well.
-
-The package includes inline type annotations and a `py.typed` marker, so type checkers can read the public function signatures from the installed package.
+Most functions accept and return plain GeoJSON dictionaries. The package does not require custom geometry classes.
 
 ## Geometry Helpers
 
@@ -68,7 +78,7 @@ print(linestrings_intersect(diagonal_up, far_away))
 ### Point in Polygon
 
 ```python
-from geojson_utils import point_in_polygon, point_in_multipolygon
+from geojson_utils import point_in_multipolygon, point_in_polygon
 
 point = {"type": "Point", "coordinates": [5, 5]}
 polygon = {
@@ -89,7 +99,7 @@ multi_polygon = {
 print(point_in_multipolygon(point, multi_polygon))
 ```
 
-Polygon holes are not handled yet. See the inline TODOs in `geojson_utils/geojson_utils.py`.
+Polygon holes are not handled yet.
 
 ### Draw a Circle Polygon
 
@@ -149,11 +159,11 @@ merged = merge_featurecollection(first_feature_collection, second_feature_collec
 deduped = simplify_other(major_points, minor_points, dist=50)
 ```
 
-`simplify_other()` works on Point FeatureCollections. It appends points from the minor collection only when they are farther than `dist` meters from all points in the major collection.
+`simplify_other()` works on Point FeatureCollections. It appends points from the minor collection only when they are farther than `dist` meters from every point in the major collection.
 
 ## Simplify Point Arrays
 
-`simplify()` reduces an array of GeoJSON Point objects using a meter-based tolerance.
+`simplify()` reduces a list of GeoJSON Point objects with the Ramer-Douglas-Peucker algorithm. The `kink` value is measured in meters.
 
 ```python
 from geojson_utils import simplify
@@ -173,8 +183,6 @@ The function preserves the first and last point and keeps intermediate points wh
 
 `convertor()` mutates the input geometry and returns it.
 
-Supported conversion methods:
-
 | Method | Conversion |
 | --- | --- |
 | `wgs2gcj` | WGS84 to GCJ-02 |
@@ -186,6 +194,7 @@ Supported conversion methods:
 
 ```python
 import json
+
 from geojson_utils import convertor
 
 with open("tests/province_wgs.geojson", encoding="utf-8") as fp:
@@ -195,6 +204,10 @@ for feature in geojson["features"]:
     converted = convertor(feature["geometry"], method="wgs2gcj")
     print(converted["type"])
 ```
+
+## Type Checking
+
+The package includes inline annotations and a `py.typed` marker. Type checkers can read the installed package signatures without separate stub files.
 
 ## Development
 
@@ -209,13 +222,12 @@ python3 -m unittest discover -v
 Run a syntax check:
 
 ```bash
-python3 -m py_compile geojson_utils/*.py test.py
+python3 -m py_compile geojson_utils/*.py test.py setup.py
 ```
 
 ## Documentation
 
-- [中文文档](README_CN.md)
-- [TODO](TODO.md)
+- [Chinese README](README_CN.md)
 
 ## License
 
