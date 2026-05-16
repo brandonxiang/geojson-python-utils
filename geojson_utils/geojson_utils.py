@@ -1,7 +1,12 @@
 import math
+from typing import Any, Iterable, List, MutableMapping, Sequence, Set, Tuple
+
+Coordinate = List[float]
+Bounds = List[float]
+GeoJSON = MutableMapping[str, Any]
 
 
-def linestrings_intersect(line1, line2):
+def linestrings_intersect(line1: GeoJSON, line2: GeoJSON) -> List[GeoJSON]:
     """
     To valid whether linestrings from geojson are intersected with each other.
     reference: http://www.kevlindev.com/gui/math/intersection/Intersection.js
@@ -12,7 +17,7 @@ def linestrings_intersect(line1, line2):
 
     if(line1 intersects with other) return intersect point array else empty array
     """
-    intersects = []
+    intersects: List[GeoJSON] = []
     for i in range(0, len(line1['coordinates']) - 1):
         for j in range(0, len(line2['coordinates']) - 1):
             a1_x = line1['coordinates'][i][1]
@@ -39,12 +44,10 @@ def linestrings_intersect(line1, line2):
     return intersects
 
 
-def _bbox_around_polycoords(coords):
-    """
-    bounding box
-    """
-    x_all = []
-    y_all = []
+def _bbox_around_polycoords(coords: Sequence[Sequence[Coordinate]]) -> Bounds:
+    """Return a bounding box for the exterior ring of polygon coordinates."""
+    x_all: List[float] = []
+    y_all: List[float] = []
 
     for first in coords[0]:
         x_all.append(first[1])
@@ -53,20 +56,18 @@ def _bbox_around_polycoords(coords):
     return [min(x_all), min(y_all), max(x_all), max(y_all)]
 
 
-def _point_in_bbox(point, bounds):
-    """
-    valid whether the point is inside the bounding box
-    """
+def _point_in_bbox(point: GeoJSON, bounds: Sequence[float]) -> bool:
+    """Return whether a GeoJSON Point falls inside a bounding box."""
     return not(point['coordinates'][1] < bounds[0] or point['coordinates'][1] > bounds[2]
                or point['coordinates'][0] < bounds[1] or point['coordinates'][0] > bounds[3])
 
 
-def _pnpoly(x, y, coords):
+def _pnpoly(x: float, y: float, coords: Sequence[Sequence[Coordinate]]) -> bool:
     """
     the algorithm to judge whether the point is located in polygon
     reference: https://www.ecse.rpi.edu/~wrf/Research/Short_Notes/pnpoly.html#Explanation
     """
-    vert = [[0, 0]]
+    vert: List[Coordinate] = [[0, 0]]
 
     for coord in coords:
         for node in coord:
@@ -89,7 +90,8 @@ def _pnpoly(x, y, coords):
     return inside
 
 
-def _point_in_polygon(point, coords):
+def _point_in_polygon(point: GeoJSON, coords: Sequence[Sequence[Sequence[Coordinate]]]) -> bool:
+    """Return whether a point is inside any polygon coordinate set."""
     inside_box = False
     for coord in coords:
         if inside_box:
@@ -108,7 +110,7 @@ def _point_in_polygon(point, coords):
     return inside_poly
 
 
-def point_in_polygon(point, poly):
+def point_in_polygon(point: GeoJSON, poly: GeoJSON) -> bool:
     """
     valid whether the point is located in a polygon
 
@@ -123,7 +125,7 @@ def point_in_polygon(point, poly):
     return _point_in_polygon(point, coords)
 
 
-def point_in_multipolygon(point, multipoly):
+def point_in_multipolygon(point: GeoJSON, multipoly: GeoJSON) -> bool:
     """
     valid whether the point is located in a mulitpolygon (donut polygon is not supported)
 
@@ -143,7 +145,7 @@ def point_in_multipolygon(point, multipoly):
     return False
 
 
-def number2radius(number):
+def number2radius(number: float) -> float:
     """
     convert degree into radius
 
@@ -155,7 +157,7 @@ def number2radius(number):
     return number * math.pi / 180
 
 
-def number2degree(number):
+def number2degree(number: float) -> float:
     """
     convert radius into degree
 
@@ -167,7 +169,7 @@ def number2degree(number):
     return number * 180 / math.pi
 
 
-def draw_circle(radius_in_meters, center_point, steps=15):
+def draw_circle(radius_in_meters: float, center_point: GeoJSON, steps: int = 15) -> GeoJSON:
     """
     get a circle shape polygon based on centerPoint and radius
 
@@ -183,7 +185,7 @@ def draw_circle(radius_in_meters, center_point, steps=15):
     # convert meters to radiant
     rad_center = [number2radius(center[0]), number2radius(center[1])]
     # 15 sided circle
-    poly = []
+    poly: List[Coordinate] = []
     for step in range(0, steps):
         brng = 2 * math.pi * step / steps
         lat = math.asin(math.sin(rad_center[0]) * math.cos(dist) +
@@ -194,7 +196,7 @@ def draw_circle(radius_in_meters, center_point, steps=15):
     return {"type": "Polygon", "coordinates": [poly]}
 
 
-def rectangle_centroid(rectangle):
+def rectangle_centroid(rectangle: GeoJSON) -> GeoJSON:
     """
     get the centroid of the rectangle
 
@@ -213,7 +215,7 @@ def rectangle_centroid(rectangle):
     return {'type': 'Point', 'coordinates': [xmin + xwidth / 2, ymin + ywidth / 2]}
 
 
-def point_distance(point1, point2):
+def point_distance(point1: GeoJSON, point2: GeoJSON) -> float:
     """
     calculate the distance between two points on the sphere like google map
     reference http://www.movable-type.co.uk/scripts/latlong.html
@@ -235,7 +237,7 @@ def point_distance(point1, point2):
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     return (6371 * c) * 1000
     
-def point_distance_ellipsode(point1,point2):
+def point_distance_ellipsode(point1: GeoJSON, point2: GeoJSON) -> float:
     """
     calculate the distance between two points on the ellipsode based on point1
     
@@ -261,7 +263,7 @@ def point_distance_ellipsode(point1,point2):
     return math.sqrt(distance_lat*distance_lat+distance_lon*distance_lon)
 
 
-def geometry_within_radius(geometry, center, radius):
+def geometry_within_radius(geometry: GeoJSON, center: GeoJSON, radius: float) -> bool:
     """
     To valid whether point or linestring or polygon is inside a radius around a center
 
@@ -275,7 +277,7 @@ def geometry_within_radius(geometry, center, radius):
     if geometry['type'] == 'Point':
         return point_distance(geometry, center) <= radius
     elif geometry['type'] == 'LineString' or geometry['type'] == 'Polygon':
-        point = {}
+        point: GeoJSON = {}
         # it's enough to check the exterior ring of the Polygon
         coordinates = geometry['coordinates'][0] if geometry['type'] == 'Polygon' else geometry['coordinates']
 
@@ -286,7 +288,7 @@ def geometry_within_radius(geometry, center, radius):
     return True
 
 
-def area(poly):
+def area(poly: GeoJSON) -> float:
     """
     calculate the area of polygon
 
@@ -315,7 +317,7 @@ def area(poly):
     return poly_area
 
 
-def centroid(poly):
+def centroid(poly: GeoJSON) -> GeoJSON:
     """
     get the centroid of polygon
     adapted from http://paulbourke.net/geometry/polyarea/javascript.txt
@@ -348,7 +350,7 @@ def centroid(poly):
     return {'type': 'Point', 'coordinates': [y_total / six_area, x_total / six_area]}
 
 
-def destination_point(point, brng, dist):
+def destination_point(point: GeoJSON, brng: float, dist: float) -> GeoJSON:
     """
     Calculate a destination Point base on a base point and a distance
 
@@ -375,17 +377,20 @@ def destination_point(point, brng, dist):
     return {'type': 'Point', 'coordinates': [number2degree(lon2), number2degree(lat2)]}
 
 
-def _point_coordinates(point):
+def _point_coordinates(point: Any) -> Coordinate:
+    """Read coordinates from a GeoJSON Point dict or a point-like object."""
     if isinstance(point, dict):
         return point['coordinates']
     return point.coordinates
 
 
-def _coordinates_to_point(coordinates):
+def _coordinates_to_point(coordinates: Sequence[float]) -> GeoJSON:
+    """Create a GeoJSON Point from a coordinate pair."""
     return {'type': 'Point', 'coordinates': list(coordinates)}
 
 
-def _project_coordinate(coordinate, reference_latitude):
+def _project_coordinate(coordinate: Sequence[float], reference_latitude: float) -> Tuple[float, float]:
+    """Project lon/lat degrees to a local meter plane around a latitude."""
     lng = coordinate[0]
     lat = coordinate[1]
     meters_per_degree = 6378137 * math.pi / 180.0
@@ -395,7 +400,8 @@ def _project_coordinate(coordinate, reference_latitude):
     )
 
 
-def _perpendicular_distance(point, start, end):
+def _perpendicular_distance(point: Coordinate, start: Coordinate, end: Coordinate) -> float:
+    """Return point-to-segment distance in meters."""
     reference_latitude = (point[1] + start[1] + end[1]) / 3.0
     point_x, point_y = _project_coordinate(point, reference_latitude)
     start_x, start_y = _project_coordinate(start, reference_latitude)
@@ -412,7 +418,14 @@ def _perpendicular_distance(point, start, end):
     )
 
 
-def _simplify_section(coordinates, start, end, tolerance, keep):
+def _simplify_section(
+    coordinates: Sequence[Coordinate],
+    start: int,
+    end: int,
+    tolerance: float,
+    keep: Set[int],
+) -> None:
+    """Mark significant points for one Ramer-Douglas-Peucker section."""
     max_distance = -1
     index = start
 
@@ -428,7 +441,7 @@ def _simplify_section(coordinates, start, end, tolerance, keep):
         _simplify_section(coordinates, index, end, tolerance, keep)
 
 
-def simplify(source, kink=20):
+def simplify(source: Iterable[GeoJSON], kink: float = 20) -> List[GeoJSON]:
     """
     Simplify an array of GeoJSON Point objects with the Ramer-Douglas-Peucker algorithm.
 
@@ -449,6 +462,5 @@ def simplify(source, kink=20):
     _simplify_section(coordinates, 0, count - 1, kink, keep)
 
     return [_coordinates_to_point(coordinates[index]) for index in sorted(keep)]
-
 
 

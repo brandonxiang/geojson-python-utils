@@ -8,10 +8,16 @@ setup(
     classifiers = [
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3 :: Only',
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
     ],
     packages = find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
+    package_data={
+        "geojson_utils": ["py.typed"],
+    },
+    python_requires=">=3.8",
     keywords = "python geojson util calculation",
     author = "brandonxiang",
     author_email = "1542453460@qq.com",

@@ -19,6 +19,8 @@ This project started as a Python port inspired by [geojson-js-utils](https://git
 
 ## Installation
 
+geojson-python-utils supports Python 3.8 and newer. The current codebase is typed for Python 3 and is not intended to support Python 2.
+
 ```bash
 pip install geojson_utils
 ```
@@ -45,6 +47,8 @@ print(point_distance(oakland, naval_base))
 ```
 
 All functions accept plain Python dictionaries shaped like GeoJSON objects. Most helpers return plain GeoJSON dictionaries as well.
+
+The package includes inline type annotations and a `py.typed` marker, so type checkers can read the public function signatures from the installed package.
 
 ## Geometry Helpers
 

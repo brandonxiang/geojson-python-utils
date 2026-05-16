@@ -1,8 +1,12 @@
 import math
 from copy import deepcopy
+from typing import Any, Dict
 from .geojson_utils import point_distance
 
-def merge_featurecollection(*jsons):
+GeoJSON = Dict[str, Any]
+
+
+def merge_featurecollection(*jsons: GeoJSON) -> GeoJSON:
     """
     merge features into one featurecollection
 
@@ -12,13 +16,14 @@ def merge_featurecollection(*jsons):
     return geojson featurecollection
     """
     features = []
-    for json in jsons:
-        if json['type'] == 'FeatureCollection':
-            for feature in json['features']:
+    for geojson in jsons:
+        if geojson['type'] == 'FeatureCollection':
+            for feature in geojson['features']:
                 features.append(feature)
     return {"type":'FeatureCollection', "features":features}
 
-def simplify_other(major, minor, dist):
+
+def simplify_other(major: GeoJSON, minor: GeoJSON, dist: float) -> GeoJSON:
     """
     Simplify the point featurecollection of poi with another point features accoording by distance.
     Attention: point featurecollection only
@@ -43,7 +48,7 @@ def simplify_other(major, minor, dist):
                 maingeom = mainfeature['geometry']
                 mainlng = maingeom['coordinates'][0]
                 mainlat = maingeom['coordinates'][1]
-          
+
                 if abs(minorlat-mainlat) <= arc and abs(minorlng-mainlng) <= arc:
                     distance = point_distance(maingeom, minorgeom)
                     if distance < dist:
@@ -53,11 +58,10 @@ def simplify_other(major, minor, dist):
                 result["features"].append(minorfeature)
     return result
 
-def get_endpoint_from_points(points):
-    """
 
-    """
-    count = 0 
+def get_endpoint_from_points(points: GeoJSON) -> GeoJSON:
+    """Return points that do not share coordinates with another feature."""
+    count = 0
     result = deepcopy(points)
     if points['type'] == 'FeatureCollection':
         feature_count = len(points['features'])
@@ -80,16 +84,14 @@ def get_endpoint_from_points(points):
     return result
 
 
-def get_endpoint_from_linestring(linestrings):
-    """
-    """
+def get_endpoint_from_linestring(linestrings: GeoJSON) -> GeoJSON:
+    """Return line endpoints that appear only once in a LineString FeatureCollection."""
     points = get_bothend_from_linestring(linestrings)
     return get_endpoint_from_points(points)
 
-def get_bothend_from_linestring(linestrings):
-    """
 
-    """
+def get_bothend_from_linestring(linestrings: GeoJSON) -> GeoJSON:
+    """Return a Point FeatureCollection containing both endpoints of every LineString."""
     points = []
 
     for linestring in linestrings['features']:
@@ -103,7 +105,9 @@ def get_bothend_from_linestring(linestrings):
         points.append(last_feat)
     return {'type': 'FeatureCollection', 'features': points}
 
-def get_point_feature(coord, properties):
+
+def get_point_feature(coord: Any, properties: Dict[str, Any]) -> GeoJSON:
+    """Create a GeoJSON Point Feature with copied properties."""
     return {
         'type': 'Feature',
         'geometry': {
@@ -112,4 +116,3 @@ def get_point_feature(coord, properties):
         },
         'properties': properties,
     }
-
