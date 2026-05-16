@@ -9,3 +9,4 @@ from .validation import *
 from .converters import *
 from .wkt import *
 from .csv_adapter import *
+from .file_adapters import *

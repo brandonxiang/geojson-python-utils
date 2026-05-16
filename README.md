@@ -270,6 +270,23 @@ text = feature_collection_to_csv(collection, id_column="id")
 
 CSV conversion targets Point FeatureCollections. Coordinate columns default to `longitude` and `latitude`, and all other columns are preserved as Feature properties.
 
+### Shapefile / GeoPackage
+
+Heavier desktop GIS formats are exposed through optional adapters so the base package stays small.
+
+```bash
+pip install "geojson_utils[files]"
+```
+
+```python
+from geojson_utils import read_geopackage, read_shapefile, write_geopackage, write_shapefile
+
+collection = read_shapefile("roads.shp")
+write_geopackage(collection, "roads.gpkg", layer="roads")
+```
+
+These adapters use GeoPandas when installed. Without the optional dependency, they raise `OptionalAdapterError` with installation guidance.
+
 ## Command Line
 
 Installing the package exposes `geojson-utils` for common pipeline tasks.
