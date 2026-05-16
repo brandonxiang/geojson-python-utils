@@ -302,6 +302,18 @@ with open("features.ndjson", encoding="utf-8") as source:
 
 `iter_features()` yields Feature objects from a Feature, FeatureCollection, or bare Geometry. `write_ndjson_features()` writes one Feature per line for pipeline-friendly processing.
 
+## Bounding Boxes and Spatial Filtering
+
+```python
+from geojson_utils import BBoxIndex, bbox, filter_features_by_bbox
+
+bounds = bbox(collection)
+nearby = filter_features_by_bbox(collection, [120, 30, 121, 31])
+indexed = BBoxIndex(collection).search([120, 30, 121, 31])
+```
+
+`bbox()` returns `[min_lon, min_lat, max_lon, max_lat]` for Geometry, Feature, and FeatureCollection objects. The lightweight `BBoxIndex` keeps precomputed feature bounds for repeated bbox searches without requiring an optional R-tree dependency.
+
 ## Command Line
 
 Installing the package exposes `geojson-utils` for common pipeline tasks.
