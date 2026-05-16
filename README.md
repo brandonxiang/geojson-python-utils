@@ -1,248 +1,217 @@
 # geojson-python-utils
 
-> JavaScript Version: [geojson-js-utils](https://github.com/maxogden/geojson-js-utils)
+Python helper functions for common GeoJSON geometry tasks: intersection checks, point-in-polygon tests, distance calculations, polygon metrics, coordinate conversion, feature collection merging, and point simplification.
 
-This project is inspired by [geojson-js-utils](https://github.com/maxogden/geojson-js-utils). Geojson becomes more popular than before. These algorithms also are what I want to learn about, which may give you some inspiration.
+This project started as a Python port inspired by [geojson-js-utils](https://github.com/maxogden/geojson-js-utils).
 
-## Chinese Doc
+## Features
 
-[中文文档](README_CN.md)
+- LineString intersection detection
+- Point-in-Polygon and Point-in-MultiPolygon checks
+- Circle polygon generation from a center point and radius
+- Polygon area and centroid helpers
+- Spherical and ellipsoidal point distance calculations
+- Radius checks for Point, LineString, and Polygon geometries
+- Destination point calculation from bearing and distance
+- FeatureCollection merging and endpoint helpers
+- Point-array simplification with a meter-based tolerance
+- Coordinate conversion between WGS84, GCJ-02, and BD-09
 
-## Usage
+## Installation
 
-Copy `geojson_utils.py` into your working directory, and import the modules into your py file.
-
-```
-from geojson_utils import linestrings_intersect
-```
-
-or install
-
-```
+```bash
 pip install geojson_utils
 ```
 
-## Example
+You can also copy the `geojson_utils/` package into a project and import from it directly.
 
-### Linestrings Intersection
+## Quick Start
 
-To valid whether linestrings from geojson are intersected with each other.
+```python
+from geojson_utils import point_in_polygon, point_distance
 
+point = {"type": "Point", "coordinates": [5, 5]}
+polygon = {
+    "type": "Polygon",
+    "coordinates": [[[0, 0], [10, 0], [10, 10], [0, 10]]],
+}
+
+print(point_in_polygon(point, polygon))
+
+oakland = {"type": "Point", "coordinates": [-122.260000705719, 37.80919060818706]}
+naval_base = {"type": "Point", "coordinates": [-122.32083320617676, 37.78774223089045]}
+
+print(point_distance(oakland, naval_base))
 ```
+
+All functions accept plain Python dictionaries shaped like GeoJSON objects. Most helpers return plain GeoJSON dictionaries as well.
+
+## Geometry Helpers
+
+### LineString Intersection
+
+```python
 from geojson_utils import linestrings_intersect
 
-diagonal_up_str = '{ "type": "LineString","coordinates": [[0, 0], [10, 10]]}'
-diagonal_down_str = '{ "type": "LineString","coordinates": [[10, 0], [0, 10]]}'
-far_away_str = '{ "type": "LineString","coordinates": [[100, 100], [110, 110]]}'
-diagonal_up = json.loads(diagonal_up_str)
-diagonal_down = json.loads(diagonal_down_str)
-far_away = json.loads(far_away_str)
+diagonal_up = {"type": "LineString", "coordinates": [[0, 0], [10, 10]]}
+diagonal_down = {"type": "LineString", "coordinates": [[10, 0], [0, 10]]}
+far_away = {"type": "LineString", "coordinates": [[100, 100], [110, 110]]}
 
-print linestrings_intersect(diagonal_up, diagonal_down)
-#[{'type': 'Point', 'coordinates': [0, 0]}]
-print linestrings_intersect(diagonal_up, far_away)
-#[]
+print(linestrings_intersect(diagonal_up, diagonal_down))
+print(linestrings_intersect(diagonal_up, far_away))
 ```
 
 ### Point in Polygon
-To valid whether the point is located in a polygon
 
-```
-from geojson_utils import point_in_polygon
+```python
+from geojson_utils import point_in_polygon, point_in_multipolygon
 
-in_str = '{"type": "Point", "coordinates": [5, 5]}'
-out_str = '{"type": "Point", "coordinates": [15, 15]}'
-box_str = '{"type": "Polygon","coordinates": [[ [0, 0], [10, 0], [10, 10], [0, 10] ]]}'
-in_box = json.loads(in_str)
-out_box = json.loads(out_str)
-box = json.loads(box_str)
+point = {"type": "Point", "coordinates": [5, 5]}
+polygon = {
+    "type": "Polygon",
+    "coordinates": [[[0, 0], [10, 0], [10, 10], [0, 10]]],
+}
 
-print point_in_polygon(in_box, box)
-#True
-point_in_polygon(out_box, box)
-#False
-```
+print(point_in_polygon(point, polygon))
 
+multi_polygon = {
+    "type": "MultiPolygon",
+    "coordinates": [
+        [[[0, 0], [0, 10], [10, 10], [10, 0], [0, 0]]],
+        [[[10, 10], [10, 20], [20, 20], [20, 10], [10, 10]]],
+    ],
+}
 
-### Point in Multipolygon
-To valid whether the point is located in a mulitpolygon (donut polygon is not supported)
-
-```
-from geojson_utils import point_in_multipolygon
-
-point_str = '{"type": "Point", "coordinates": [0.5, 0.5]}'
-single_point_str = '{"type": "Point", "coordinates": [-1, -1]}'
-multipoly_str = '{"type":"MultiPolygon","coordinates":[[[[0,0],[0,10],[10,10],[10,0],[0,0]]],[[[10,10],[10,20],[20,20],[20,10],[10,10]]]]}'
-point = json.loads(point_str)
-single_point = json.loads(single_point_str)
-multipoly = json.loads(multipoly_str)
-
-print point_in_multipolygon(point, multipoly)
-#True
-print point_in_multipolygon(single_point, multipoly)
-#False
+print(point_in_multipolygon(point, multi_polygon))
 ```
 
+Polygon holes are not handled yet. See the inline TODOs in `geojson_utils/geojson_utils.py`.
 
-### Draw Circle
-To get a circle shape polygon based on centerPoint and radius
+### Draw a Circle Polygon
 
-```
+```python
 from geojson_utils import draw_circle
 
-pt_center = json.loads('{"type": "Point", "coordinates": [0, 0]}')
+center = {"type": "Point", "coordinates": [0, 0]}
+circle = draw_circle(10, center, steps=50)
 
-print len(draw_circle(10, pt_center)['coordinates'][0])
-#15
-print len(draw_circle(10, pt_center, 50)['coordinates'][0])
-#50
+print(circle["type"])
+print(len(circle["coordinates"][0]))
 ```
 
+### Distance and Radius Checks
 
-### Rectangle Centroid
-To get the centroid of the rectangle
+```python
+from geojson_utils import geometry_within_radius, point_distance
 
-```
-from geojson_utils import centroid
+center = {"type": "Point", "coordinates": [-122.260000705719, 37.80919060818706]}
+candidate = {"type": "Point", "coordinates": [-122.32083320617676, 37.78774223089045]}
 
-box_str = '{"type": "Polygon","coordinates": [[[0, 0],[10, 0],[10, 10],[0, 10]]]}'
-box = json.loads(box_str)
-centroid = rectangle_centroid(box)
-
-print centroid['coordinates']
-#[5, 5]
-```
-  
-
-
-### Distance between Two Points
-To calculate the distance between two point on the sphere like google map (reference http://www.movable-type.co.uk/scripts/latlong.html)
-
-```
-from geojson_utils import point_distance
-
-fairyland_str = '{"type": "Point", "coordinates": [-122.260000705719, 37.80919060818706]}'
-navalbase_str = '{"type": "Point", "coordinates": [-122.32083320617676, 37.78774223089045]}'
-fairyland = json.loads(fairyland_str)
-navalbase = json.loads(navalbase_str)
-
-print math.floor(point_distance(fairyland, navalbase))
-# 5852
+print(point_distance(center, candidate))
+print(geometry_within_radius(candidate, center, 5853))
 ```
 
+### Area and Centroid
 
+```python
+from geojson_utils import area, centroid, rectangle_centroid
 
-### Geometry within Radius
-To valid whether point or linestring or polygon is inside a radius around a center
+polygon = {
+    "type": "Polygon",
+    "coordinates": [[[0, 0], [10, 0], [10, 10], [0, 10]]],
+}
 
-```
-from geojson_utils import geometry_within_radius
-
-center_point_str = '{"type": "Point", "coordinates":  [-122.260000705719, 37.80919060818706]}'
-check_point_str = '{"type": "Point", "coordinates": [-122.32083320617676, 37.78774223089045]}'
-center_point = json.loads(center_point_str)
-check_point = json.loads(check_point_str)
-
-print geometry_within_radius(check_point, center_point, 5853)
-#True
+print(area(polygon))
+print(centroid(polygon))
+print(rectangle_centroid(polygon))
 ```
 
+### Destination Point
 
-### Area
-To calculate the area of polygon
-
-```
-from geojson_utils import area
- 
-box_str = '{"type": "Polygon","coordinates": [[ [0, 0], [10, 0], [10, 10], [0, 10] ]]}'
-box = json.loads(box_str)
-print area(box)
-#100
-```
-
-
-### Centroid
-To get the centroid of polygon
-adapted from http://paulbourke.net/geometry/polyarea/javascript.txt
-
-```
-from geojson_utils import centroid
-box_str = '{"type": "Polygon","coordinates": [[ [0, 0], [10, 0], [10, 10], [0, 10] ]]}'
-box = json.loads(box_str)
-
-print centroid(box)
-#{"type": "Point", "coordinates": [5, 5]})
-```
-
-
-### Destination point
-To calculate a destination Point base on a base point and a distance
-
-```
+```python
 from geojson_utils import destination_point
 
-startpoint_str = '{"type": "Point", "coordinates":  [-122.260000705719, 37.80919060818706]}'
-startpoint = json.loads(startpoint_str)
+start = {"type": "Point", "coordinates": [-122.260000705719, 37.80919060818706]}
 
-print destination_point(startpoint, 180, 2000)
-#{'type': 'Point', 'coordinates': [-122.26000070571902, 19.822758489812447]}
+print(destination_point(start, 180, 2000))
 ```
 
-### Merge Featurecollection geojson 
+## FeatureCollection Helpers
 
-To merge features into one featurecollection
+```python
+from geojson_utils import merge_featurecollection, simplify_other
 
-```
-from geojson_utils import merge_featurecollection
-with open('tests/first.json','r') as fp:
-    first = json.load(fp)
-with open('tests/second.json','r') as fp:
-    second = json.load(fp)
-with open('tests/result.json','r') as fp:
-    result = json.load(fp)
-merge_featurecollection(first,second)
+merged = merge_featurecollection(first_feature_collection, second_feature_collection)
+deduped = simplify_other(major_points, minor_points, dist=50)
 ```
 
-### Simplify other point
+`simplify_other()` works on Point FeatureCollections. It appends points from the minor collection only when they are farther than `dist` meters from all points in the major collection.
 
-Simplify the point featurecollection of poi with another point features accoording by distance.
+## Simplify Point Arrays
 
-Attention: point featurecollection only
+`simplify()` reduces an array of GeoJSON Point objects using a meter-based tolerance.
 
-## Conversion between wgs84, gcj02, bd09
+```python
+from geojson_utils import simplify
 
-Conversion between wgs84, gcj02 and bd09
+points = [
+    {"type": "Point", "coordinates": [0, 0]},
+    {"type": "Point", "coordinates": [0.001, 0.00001]},
+    {"type": "Point", "coordinates": [0.002, 0]},
+]
 
-Parameter One: geojson geometry
-
-Parameter Two: 
-
-- **wgs2gcj** coordinates conversion from wgs84 to gcj02  
-- **gcj2wgs** coordinates conversion from gcj02 to wgs84 
-- **wgs2bd** coordinates conversion from wgs84 to bd09 
-- **bd2wgs** coordinates conversion from bd09 to wgs84 
-- **gcj2bd** coordinates conversion from gcj02 to bd09 
-- **bd2gcj** coordinates conversion from bd09 to gcj02 
-
-
+print(simplify(points, kink=20))
 ```
+
+The function preserves the first and last point and keeps intermediate points whose perpendicular distance is greater than the `kink` tolerance.
+
+## Coordinate Conversion
+
+`convertor()` mutates the input geometry and returns it.
+
+Supported conversion methods:
+
+| Method | Conversion |
+| --- | --- |
+| `wgs2gcj` | WGS84 to GCJ-02 |
+| `gcj2wgs` | GCJ-02 to WGS84 |
+| `wgs2bd` | WGS84 to BD-09 |
+| `bd2wgs` | BD-09 to WGS84 |
+| `gcj2bd` | GCJ-02 to BD-09 |
+| `bd2gcj` | BD-09 to GCJ-02 |
+
+```python
+import json
 from geojson_utils import convertor
-with open('tests/province_wgs.geojson', encoding='utf-8') as fp:
+
+with open("tests/province_wgs.geojson", encoding="utf-8") as fp:
     geojson = json.load(fp)
-    features = geojson['features']
-    for feature in features:
-        origin = feature['geometry']['coordinates'][0][0][0]
-        result = convertor(feature['geometry'])
+
+for feature in geojson["features"]:
+    converted = convertor(feature["geometry"], method="wgs2gcj")
+    print(converted["type"])
 ```
 
+## Development
 
-## TODO
+The active development branch is `develop`.
 
-[TODO](TODO.md)
+Run the test suite:
 
-## Development 
+```bash
+python3 -m unittest discover -v
+```
 
-On the develop branch
+Run a syntax check:
+
+```bash
+python3 -m py_compile geojson_utils/*.py test.py
+```
+
+## Documentation
+
+- [中文文档](README_CN.md)
+- [TODO](TODO.md)
 
 ## License
 
