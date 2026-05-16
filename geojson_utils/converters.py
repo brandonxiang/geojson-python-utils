@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, Optional, Tuple
 
 from .validation import GeoJSON, validate_geojson
+from .wkt import geojson_to_wkb, geojson_to_wkt, wkb_to_geojson, wkt_to_geojson
 
 Converter = Callable[[Any], Any]
 FormatPair = Tuple[str, str]
@@ -95,3 +96,7 @@ register_converter("geojson", "json", _geojson_to_json_text)
 register_converter("json", "geojson", _json_text_to_geojson)
 register_converter("geojson-file", "geojson", read_geojson)
 register_converter("geojson", "geojson-file", lambda value: value)
+register_converter("geojson", "wkt", lambda value: geojson_to_wkt(read_geojson_auto(value)))
+register_converter("wkt", "geojson", wkt_to_geojson)
+register_converter("geojson", "wkb", lambda value: geojson_to_wkb(read_geojson_auto(value)))
+register_converter("wkb", "geojson", wkb_to_geojson)

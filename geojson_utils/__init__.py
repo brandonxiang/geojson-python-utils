@@ -7,3 +7,4 @@ from .merger import *
 from .coordTransform_utils import *
 from .validation import *
 from .converters import *
+from .wkt import *
