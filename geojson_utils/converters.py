@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, Optional, Tuple
 
 from .validation import GeoJSON, validate_geojson
+from .csv_adapter import csv_to_feature_collection, feature_collection_to_csv
 from .wkt import geojson_to_wkb, geojson_to_wkt, wkb_to_geojson, wkt_to_geojson
 
 Converter = Callable[[Any], Any]
@@ -100,3 +101,5 @@ register_converter("geojson", "wkt", lambda value: geojson_to_wkt(read_geojson_a
 register_converter("wkt", "geojson", wkt_to_geojson)
 register_converter("geojson", "wkb", lambda value: geojson_to_wkb(read_geojson_auto(value)))
 register_converter("wkb", "geojson", wkb_to_geojson)
+register_converter("csv", "geojson", csv_to_feature_collection)
+register_converter("geojson", "csv", lambda value: feature_collection_to_csv(read_geojson_auto(value)))
