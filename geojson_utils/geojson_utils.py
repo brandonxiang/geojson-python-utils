@@ -375,108 +375,80 @@ def destination_point(point, brng, dist):
     return {'type': 'Point', 'coordinates': [number2degree(lon2), number2degree(lat2)]}
 
 
+def _point_coordinates(point):
+    if isinstance(point, dict):
+        return point['coordinates']
+    return point.coordinates
+
+
+def _coordinates_to_point(coordinates):
+    return {'type': 'Point', 'coordinates': list(coordinates)}
+
+
+def _project_coordinate(coordinate, reference_latitude):
+    lng = coordinate[0]
+    lat = coordinate[1]
+    meters_per_degree = 6378137 * math.pi / 180.0
+    return (
+        lng * meters_per_degree * math.cos(number2radius(reference_latitude)),
+        lat * meters_per_degree,
+    )
+
+
+def _perpendicular_distance(point, start, end):
+    reference_latitude = (point[1] + start[1] + end[1]) / 3.0
+    point_x, point_y = _project_coordinate(point, reference_latitude)
+    start_x, start_y = _project_coordinate(start, reference_latitude)
+    end_x, end_y = _project_coordinate(end, reference_latitude)
+
+    delta_x = end_x - start_x
+    delta_y = end_y - start_y
+
+    if delta_x == 0 and delta_y == 0:
+        return math.sqrt((point_x - start_x) ** 2 + (point_y - start_y) ** 2)
+
+    return abs(delta_y * point_x - delta_x * point_y + end_x * start_y - end_y * start_x) / math.sqrt(
+        delta_x ** 2 + delta_y ** 2
+    )
+
+
+def _simplify_section(coordinates, start, end, tolerance, keep):
+    max_distance = -1
+    index = start
+
+    for i in range(start + 1, end):
+        distance = _perpendicular_distance(coordinates[i], coordinates[start], coordinates[end])
+        if distance > max_distance:
+            index = i
+            max_distance = distance
+
+    if max_distance > tolerance:
+        keep.add(index)
+        _simplify_section(coordinates, start, index, tolerance, keep)
+        _simplify_section(coordinates, index, end, tolerance, keep)
+
+
 def simplify(source, kink=20):
     """
-     source[] array of geojson points
-     kink	in metres, kinks above this depth kept
-     kink depth is the height of the triangle abc where a-b and b-c are two consecutive line segments
+    Simplify an array of GeoJSON Point objects with the Ramer-Douglas-Peucker algorithm.
+
+    Keyword arguments:
+    source -- array of geojson point objects
+    kink   -- tolerance in meters. Kinks above this depth are kept.
+
+    return simplified array of geojson point objects
     """
-    source_coord = map(lambda o: {"lng": o.coordinates[0], "lat": o.coordinates[1]}, source)
+    points = list(source)
+    coordinates = [_point_coordinates(point) for point in points]
+    count = len(coordinates)
 
-    # count, n_stack, n_dest, start, end, i, sig;
-    # dev_sqr, max_dev_sqr, band_sqr;
-    # x12, y12, d12, x13, y13, d13, x23, y23, d23;
-    F = (math.pi / 180.0) * 0.5
-    index = [] # aray of indexes of source points to include in the reduced line
-    sig_start = [] # indices of start & end of working section
-    sig_end = []
+    if count < 3 or kink <= 0:
+        return [_coordinates_to_point(coordinate) for coordinate in coordinates]
 
-    # check for simple cases
-    count = len(source_coord)
-    if count < 3:
-        return source_coord # one or two points
+    keep = set([0, count - 1])
+    _simplify_section(coordinates, 0, count - 1, kink, keep)
 
-    # more complex case. initialize stack
-
-    band_sqr = kink * 360.0 / (2.0 * math.pi * 6378137.0) # Now in degrees
-    band_sqr *= band_sqr
-    n_dest = 0
-    sig_start[0] = 0
-    sig_end[0] = count - 1
-    n_stack = 1
-
-    # while the stack is not empty
-    while n_stack > 0:
-        # ... pop the top-most entries off the stacks
-        start = sig_start[n_stack - 1]
-        end = sig_end[n_stack - 1]
-        n_stack -= 1
-
-        if (end - start) > 1: #any intermediate points ?
-            # ... yes, so find most deviant intermediate point to either side of line joining start & end points
-            x12 = source[end]["lng"] - source[start]["lng"]
-            y12 = source[end]["lat"] - source[start]["lat"]
-            if math.fabs(x12) > 180.0:
-                x12 = 360.0 - math.fabs(x12)
-            x12 *= math.cos(F * (source[end]["lat"] + source[start]["lat"])) # use avg lat to reduce lng
-            d12 = (x12 * x12) + (y12 * y12)
-
-            i = start + 1
-            sig = start
-            max_dev_sqr = -1.0
-            while i < end:
-                x13 = source[i]["lng"] - source[start]["lng"]
-                y13 = source[i]["lat"] - source[start]["lat"]
-                if math.fabs(x13) > 180.0:
-                    x13 = 360.0 - math.fabs(x13)
-                x13 *= math.cos(F * (source[i]["lat"] + source[start]["lat"]))
-                d13 = (x13 * x13) + (y13 * y13)
-                x23 = source[i]["lng"] - source[end]["lng"]
-                y23 = source[i]["lat"] - source[end]["lat"]
-                if math.fabs(x23) > 180.0:
-                    x23 = 360.0 - math.fabs(x23)
-                x23 *= math.cos(F * (source[i]["lat"] + source[end]["lat"]))
-                d23 = (x23 * x23) + (y23 * y23)
-
-                if d13 >= (d12 + d23):
-                    dev_sqr = d23
-                elif d23 >= (d12 + d13):
-                    dev_sqr = d13
-                else:
-                    dev_sqr = (x13 * y12 - y13 * x12) * (x13 * y12 - y13 * x12) / d12 # solve triangle
-                if dev_sqr > max_dev_sqr:
-                    sig = i
-                    max_dev_sqr = dev_sqr
-                i += 1
-
-
-            if max_dev_sqr < band_sqr: # is there a sig. intermediate point ?
-            #... no, so transfer current start point
-                index[n_dest] = start
-                n_dest += 1
-            else: # ... yes, so push two sub-sections on stack for further processing
-                n_stack += 1
-                sig_start[n_stack - 1] = sig
-                sig_end[n_stack - 1] = end
-                n_stack += 1
-                sig_start[n_stack - 1] = start
-                sig_end[n_stack - 1] = sig
-
-        else:  # ... no intermediate points, so transfer current start point
-            index[n_dest] = start
-            n_dest += 1
-
-    # transfer last point
-    index[n_dest] = count - 1
-    n_dest += 1
-
-    # make return array
-    r = []
-    for i in range(0, n_dest):
-        r.append(source_coord[index[i]])
-
-    return map(lambda o:  {"type": "Point","coordinates": [o.lng, o.lat]}, r)
-
+    return [_coordinates_to_point(coordinates[index]) for index in sorted(keep)]
 
 
 

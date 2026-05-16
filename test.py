@@ -117,5 +117,26 @@ class Test(unittest.TestCase):
                 result = convertor(feature['geometry'])
                 self.assertNotEqual(origin,result['coordinates'][0][0][0])
 
+    def test_simplify_removes_points_inside_tolerance(self):
+        from geojson_utils import simplify
+        points = [
+            {'type': 'Point', 'coordinates': [0, 0]},
+            {'type': 'Point', 'coordinates': [0.001, 0.00001]},
+            {'type': 'Point', 'coordinates': [0.002, 0]},
+        ]
+        self.assertEqual(simplify(points, 20), [
+            {'type': 'Point', 'coordinates': [0, 0]},
+            {'type': 'Point', 'coordinates': [0.002, 0]},
+        ])
+
+    def test_simplify_keeps_points_outside_tolerance(self):
+        from geojson_utils import simplify
+        points = [
+            {'type': 'Point', 'coordinates': [0, 0]},
+            {'type': 'Point', 'coordinates': [0.001, 0.001]},
+            {'type': 'Point', 'coordinates': [0.002, 0]},
+        ]
+        self.assertEqual(simplify(points, 20), points)
+
 if __name__ == '__main__':
     unittest.main()

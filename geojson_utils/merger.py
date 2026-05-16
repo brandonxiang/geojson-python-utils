@@ -1,7 +1,6 @@
 import math
 from copy import deepcopy
-from geojson import Point,Feature,FeatureCollection
-from geojson_utils import point_distance
+from .geojson_utils import point_distance
 
 def merge_featurecollection(*jsons):
     """
@@ -102,9 +101,15 @@ def get_bothend_from_linestring(linestrings):
         last_feat = get_point_feature(last, properties)
         points.append(first_feat)
         points.append(last_feat)
-    return FeatureCollection(points)
+    return {'type': 'FeatureCollection', 'features': points}
 
 def get_point_feature(coord, properties):
-    return Feature(geometry=Point(coord), properties=properties)
-
+    return {
+        'type': 'Feature',
+        'geometry': {
+            'type': 'Point',
+            'coordinates': coord,
+        },
+        'properties': properties,
+    }
 
