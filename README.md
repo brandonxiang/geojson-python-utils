@@ -23,6 +23,7 @@ The project began as a Python port inspired by [geojson-js-utils](https://github
 - FeatureCollection merging and endpoint extraction.
 - Point array simplification with a meter-based tolerance.
 - Coordinate conversion between WGS84, GCJ-02, and BD-09.
+- Validation and normalization helpers for GeoJSON geometries, Features, and FeatureCollections.
 
 ## Requirements
 
@@ -59,6 +60,24 @@ print(point_distance(oakland, naval_base))
 ```
 
 Most functions accept and return plain GeoJSON dictionaries. The package does not require custom geometry classes.
+
+## Validation and Normalization
+
+```python
+from geojson_utils import normalize_geojson, validate_geojson
+
+polygon = {
+    "type": "Polygon",
+    "coordinates": [[[0, 0], [10, 0], [10, 10], [0, 10]]],
+}
+
+normalized = normalize_geojson(polygon, close_rings=True)
+validate_geojson(normalized)
+```
+
+`validate_geojson()` supports every standard GeoJSON geometry type plus Feature and FeatureCollection objects. Invalid objects raise `GeoJSONValidationError` with a path to the failing field.
+
+`normalize_geojson()` returns a copy. It can close polygon rings, orient exterior rings and holes, and optionally remove `bbox` or `id` fields.
 
 ## Geometry Helpers
 
