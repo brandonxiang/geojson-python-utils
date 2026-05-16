@@ -287,6 +287,21 @@ write_geopackage(collection, "roads.gpkg", layer="roads")
 
 These adapters use GeoPandas when installed. Without the optional dependency, they raise `OptionalAdapterError` with installation guidance.
 
+## Streaming and NDJSON
+
+For large datasets, use feature iterators and newline-delimited GeoJSON helpers instead of loading everything into memory.
+
+```python
+from geojson_utils import read_ndjson_features, write_ndjson_features
+
+with open("features.ndjson", encoding="utf-8") as source:
+    features = read_ndjson_features(source)
+    for feature in features:
+        print(feature["geometry"]["type"])
+```
+
+`iter_features()` yields Feature objects from a Feature, FeatureCollection, or bare Geometry. `write_ndjson_features()` writes one Feature per line for pipeline-friendly processing.
+
 ## Command Line
 
 Installing the package exposes `geojson-utils` for common pipeline tasks.
