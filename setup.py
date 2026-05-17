@@ -26,6 +26,15 @@ setup(
     install_requires=[
         'requests>=2.9.1',
     ],
+    extras_require={
+        "files": ["geopandas"],
+        "wkb": ["shapely"],
+    },
+    entry_points={
+        "console_scripts": [
+            "geojson-utils=geojson_utils.cli:main",
+        ],
+    },
     include_package_data = True,
     zip_safe = True
 )

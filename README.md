@@ -118,7 +118,7 @@ multi_polygon = {
 print(point_in_multipolygon(point, multi_polygon))
 ```
 
-Polygon holes are not handled yet.
+Polygon holes are handled for point-in-polygon checks, area, and centroid calculations. Boundary points count as inside.
 
 ### Draw a Circle Polygon
 
@@ -158,6 +158,8 @@ print(area(polygon))
 print(centroid(polygon))
 print(rectangle_centroid(polygon))
 ```
+
+Use `close_ring()`, `ring_is_clockwise()`, and `orient_ring()` when normalizing polygon topology before export.
 
 ### Destination Point
 
@@ -200,7 +202,7 @@ The function preserves the first and last point and keeps intermediate points wh
 
 ## Coordinate Conversion
 
-`convertor()` mutates the input geometry and returns it.
+`convertor()` supports Geometry, Feature, FeatureCollection, and GeometryCollection inputs. It mutates the input by default for backwards compatibility; pass `inplace=False` to return a converted copy.
 
 | Method | Conversion |
 | --- | --- |
@@ -220,9 +222,113 @@ with open("tests/province_wgs.geojson", encoding="utf-8") as fp:
     geojson = json.load(fp)
 
 for feature in geojson["features"]:
-    converted = convertor(feature["geometry"], method="wgs2gcj")
-    print(converted["type"])
+converted = convertor(feature["geometry"], method="wgs2gcj")
+print(converted["type"])
 ```
+
+```python
+converted = convertor(geojson, method="gcj2bd", inplace=False)
+```
+
+The coordinate-transform layer keeps the base install lightweight. EPSG/projection based transforms can be added later behind an optional extra such as `geojson_utils[crs]`.
+
+## Format Conversion API
+
+The conversion layer provides a small registry so the package can grow new adapters without a large monolithic conversion function.
+
+```python
+from geojson_utils import convert, read_geojson, write_geojson
+
+point = read_geojson("point.geojson")
+text = convert(point, from_format="geojson", to_format="json")
+round_tripped = convert(text, from_format="json", to_format="geojson")
+write_geojson(round_tripped, "round-trip.geojson")
+```
+
+You can add adapters with `register_converter(from_format, to_format, callable)`. Built-in adapters currently cover GeoJSON file IO and GeoJSON dictionary <-> JSON text conversion.
+
+### WKT / WKB
+
+```python
+from geojson_utils import geojson_to_wkt, wkt_to_geojson
+
+wkt = geojson_to_wkt({"type": "Point", "coordinates": [1, 2]})
+geometry = wkt_to_geojson("POINT (1 2)")
+```
+
+WKT support is implemented for standard GeoJSON geometry types. WKB helpers are available through optional Shapely support and raise a clear error when Shapely is not installed.
+
+### CSV Points
+
+```python
+from geojson_utils import csv_to_feature_collection, feature_collection_to_csv
+
+collection = csv_to_feature_collection(
+    "id,longitude,latitude,name\n1,120.1,30.2,Hangzhou\n",
+    id_column="id",
+)
+text = feature_collection_to_csv(collection, id_column="id")
+```
+
+CSV conversion targets Point FeatureCollections. Coordinate columns default to `longitude` and `latitude`, and all other columns are preserved as Feature properties.
+
+### Shapefile / GeoPackage
+
+Heavier desktop GIS formats are exposed through optional adapters so the base package stays small.
+
+```bash
+pip install "geojson_utils[files]"
+```
+
+```python
+from geojson_utils import read_geopackage, read_shapefile, write_geopackage, write_shapefile
+
+collection = read_shapefile("roads.shp")
+write_geopackage(collection, "roads.gpkg", layer="roads")
+```
+
+These adapters use GeoPandas when installed. Without the optional dependency, they raise `OptionalAdapterError` with installation guidance.
+
+## Streaming and NDJSON
+
+For large datasets, use feature iterators and newline-delimited GeoJSON helpers instead of loading everything into memory.
+
+```python
+from geojson_utils import read_ndjson_features, write_ndjson_features
+
+with open("features.ndjson", encoding="utf-8") as source:
+    features = read_ndjson_features(source)
+    for feature in features:
+        print(feature["geometry"]["type"])
+```
+
+`iter_features()` yields Feature objects from a Feature, FeatureCollection, or bare Geometry. `write_ndjson_features()` writes one Feature per line for pipeline-friendly processing.
+
+## Bounding Boxes and Spatial Filtering
+
+```python
+from geojson_utils import BBoxIndex, bbox, filter_features_by_bbox
+
+bounds = bbox(collection)
+nearby = filter_features_by_bbox(collection, [120, 30, 121, 31])
+indexed = BBoxIndex(collection).search([120, 30, 121, 31])
+```
+
+`bbox()` returns `[min_lon, min_lat, max_lon, max_lat]` for Geometry, Feature, and FeatureCollection objects. The lightweight `BBoxIndex` keeps precomputed feature bounds for repeated bbox searches without requiring an optional R-tree dependency.
+
+## Command Line
+
+Installing the package exposes `geojson-utils` for common pipeline tasks.
+
+```bash
+geojson-utils validate input.geojson
+geojson-utils convert input.geojson --to json --output output.json
+geojson-utils transform input.geojson --method wgs2gcj --output gcj.geojson
+geojson-utils simplify line.geojson --tolerance 20 --output simplified.geojson
+geojson-utils bbox input.geojson
+```
+
+Use `-` as the input path to read GeoJSON from stdin. Commands write to stdout unless `--output` is provided.
 
 ## Type Checking
 
