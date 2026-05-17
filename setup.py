@@ -26,6 +26,11 @@ setup(
     install_requires=[
         'requests>=2.9.1',
     ],
+    entry_points={
+        "console_scripts": [
+            "geojson-utils=geojson_utils.cli:main",
+        ],
+    },
     include_package_data = True,
     zip_safe = True
 )

@@ -239,6 +239,20 @@ write_geojson(round_tripped, "round-trip.geojson")
 
 You can add adapters with `register_converter(from_format, to_format, callable)`. Built-in adapters currently cover GeoJSON file IO and GeoJSON dictionary <-> JSON text conversion.
 
+## Command Line
+
+Installing the package exposes `geojson-utils` for common pipeline tasks.
+
+```bash
+geojson-utils validate input.geojson
+geojson-utils convert input.geojson --to json --output output.json
+geojson-utils transform input.geojson --method wgs2gcj --output gcj.geojson
+geojson-utils simplify line.geojson --tolerance 20 --output simplified.geojson
+geojson-utils bbox input.geojson
+```
+
+Use `-` as the input path to read GeoJSON from stdin. Commands write to stdout unless `--output` is provided.
+
 ## Type Checking
 
 The package includes inline annotations and a `py.typed` marker. Type checkers can read the installed package signatures without separate stub files.
