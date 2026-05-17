@@ -256,6 +256,20 @@ geometry = wkt_to_geojson("POINT (1 2)")
 
 WKT support is implemented for standard GeoJSON geometry types. WKB helpers are available through optional Shapely support and raise a clear error when Shapely is not installed.
 
+### CSV Points
+
+```python
+from geojson_utils import csv_to_feature_collection, feature_collection_to_csv
+
+collection = csv_to_feature_collection(
+    "id,longitude,latitude,name\n1,120.1,30.2,Hangzhou\n",
+    id_column="id",
+)
+text = feature_collection_to_csv(collection, id_column="id")
+```
+
+CSV conversion targets Point FeatureCollections. Coordinate columns default to `longitude` and `latitude`, and all other columns are preserved as Feature properties.
+
 ## Command Line
 
 Installing the package exposes `geojson-utils` for common pipeline tasks.
