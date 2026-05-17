@@ -62,31 +62,30 @@ def _point_in_bbox(point: GeoJSON, bounds: Sequence[float]) -> bool:
                or point['coordinates'][0] < bounds[1] or point['coordinates'][0] > bounds[3])
 
 
-def _pnpoly(x: float, y: float, coords: Sequence[Sequence[Coordinate]]) -> bool:
-    """
-    the algorithm to judge whether the point is located in polygon
-    reference: https://www.ecse.rpi.edu/~wrf/Research/Short_Notes/pnpoly.html#Explanation
-    """
-    vert: List[Coordinate] = [[0, 0]]
+def _point_on_segment(point: Coordinate, start: Coordinate, end: Coordinate) -> bool:
+    cross = (point[1] - start[1]) * (end[0] - start[0]) - (point[0] - start[0]) * (end[1] - start[1])
+    if abs(cross) > 1e-12:
+        return False
+    return (
+        min(start[0], end[0]) <= point[0] <= max(start[0], end[0])
+        and min(start[1], end[1]) <= point[1] <= max(start[1], end[1])
+    )
 
-    for coord in coords:
-        for node in coord:
-            vert.append(node)
-        vert.append(coord[0])
-        vert.append([0, 0])
 
+def _point_in_ring(point: Coordinate, ring: Sequence[Coordinate]) -> bool:
+    """Return whether a point is inside a linear ring. Boundary counts as inside."""
     inside = False
-
-    i = 0
-    j = len(vert) - 1
-
-    while i < len(vert):
-        if ((vert[i][0] > y) != (vert[j][0] > y)) and (x < (vert[j][1] - vert[i][1])
-                                                       * (y - vert[i][0]) / (vert[j][0] - vert[i][0]) + vert[i][1]):
+    j = len(ring) - 1
+    for i in range(0, len(ring)):
+        current = ring[i]
+        previous = ring[j]
+        if _point_on_segment(point, previous, current):
+            return True
+        if ((current[1] > point[1]) != (previous[1] > point[1])) and (
+            point[0] < (previous[0] - current[0]) * (point[1] - current[1]) / (previous[1] - current[1]) + current[0]
+        ):
             inside = not inside
         j = i
-        i += 1
-
     return inside
 
 
@@ -101,13 +100,13 @@ def _point_in_polygon(point: GeoJSON, coords: Sequence[Sequence[Sequence[Coordin
     if not inside_box:
         return False
 
-    inside_poly = False
+    point_coordinates = point['coordinates']
     for coord in coords:
-        if inside_poly:
-            break
-        if _pnpoly(point['coordinates'][1], point['coordinates'][0], coord):
-            inside_poly = True
-    return inside_poly
+        exterior = coord[0]
+        holes = coord[1:]
+        if _point_in_ring(point_coordinates, exterior) and not any(_point_in_ring(point_coordinates, hole) for hole in holes):
+            return True
+    return False
 
 
 def point_in_polygon(point: GeoJSON, poly: GeoJSON) -> bool:
@@ -297,24 +296,51 @@ def area(poly: GeoJSON) -> float:
 
     return polygon area
     """
-    poly_area = 0
-    # TODO: polygon holes at coordinates[1]
-    points = poly['coordinates'][0]
+    poly_area = 0.0
+    rings = poly['coordinates']
+    for index, points in enumerate(rings):
+        ring_area = 0.0
+        j = len(points) - 1
+        count = len(points)
+
+        for i in range(0, count):
+            p1_x = points[i][0]
+            p1_y = points[i][1]
+            p2_x = points[j][0]
+            p2_y = points[j][1]
+
+            ring_area += p1_x * p2_y
+            ring_area -= p1_y * p2_x
+            j = i
+
+        ring_area = abs(ring_area / 2)
+        poly_area += ring_area if index == 0 else -ring_area
+    return poly_area
+
+
+def _ring_centroid(points: Sequence[Coordinate]) -> Tuple[float, float, float]:
+    signed_area = 0.0
+    x_total = 0.0
+    y_total = 0.0
     j = len(points) - 1
     count = len(points)
 
     for i in range(0, count):
-        p1_x = points[i][1]
-        p1_y = points[i][0]
-        p2_x = points[j][1]
-        p2_y = points[j][0]
+        p1_x = points[i][0]
+        p1_y = points[i][1]
+        p2_x = points[j][0]
+        p2_y = points[j][1]
+        factor = p2_x * p1_y - p1_x * p2_y
 
-        poly_area += p1_x * p2_y
-        poly_area -= p1_y * p2_x
+        signed_area += factor
+        x_total += (p1_x + p2_x) * factor
+        y_total += (p1_y + p2_y) * factor
         j = i
 
-    poly_area /= 2
-    return poly_area
+    signed_area /= 2
+    if signed_area == 0:
+        return 0, 0, 0
+    return x_total / (signed_area * 6), y_total / (signed_area * 6), signed_area
 
 
 def centroid(poly: GeoJSON) -> GeoJSON:
@@ -327,27 +353,17 @@ def centroid(poly: GeoJSON) -> GeoJSON:
 
     return polygon centroid
     """
-    f_total = 0
-    x_total = 0
-    y_total = 0
-    # TODO: polygon holes at coordinates[1]
-    points = poly['coordinates'][0]
-    j = len(points) - 1
-    count = len(points)
+    x_total = 0.0
+    y_total = 0.0
+    area_total = 0.0
+    for index, ring in enumerate(poly['coordinates']):
+        x, y, signed_area = _ring_centroid(ring)
+        weight = abs(signed_area) if index == 0 else -abs(signed_area)
+        x_total += x * weight
+        y_total += y * weight
+        area_total += weight
 
-    for i in range(0, count):
-        p1_x = points[i][1]
-        p1_y = points[i][0]
-        p2_x = points[j][1]
-        p2_y = points[j][0]
-
-        f_total = p1_x * p2_y - p2_x * p1_y
-        x_total += (p1_x + p2_x) * f_total
-        y_total += (p1_y + p2_y) * f_total
-        j = i
-
-    six_area = area(poly) * 6
-    return {'type': 'Point', 'coordinates': [y_total / six_area, x_total / six_area]}
+    return {'type': 'Point', 'coordinates': [x_total / area_total, y_total / area_total]}
 
 
 def destination_point(point: GeoJSON, brng: float, dist: float) -> GeoJSON:
@@ -462,5 +478,4 @@ def simplify(source: Iterable[GeoJSON], kink: float = 20) -> List[GeoJSON]:
     _simplify_section(coordinates, 0, count - 1, kink, keep)
 
     return [_coordinates_to_point(coordinates[index]) for index in sorted(keep)]
-
 

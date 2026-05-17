@@ -152,14 +152,31 @@ def _ring_area(ring: Sequence[Sequence[float]]) -> float:
     return total / 2.0
 
 
-def _normalize_ring(ring: Iterable[Sequence[float]], clockwise: Optional[bool]) -> Ring:
+def ring_is_clockwise(ring: Sequence[Sequence[float]]) -> bool:
+    """Return whether a linear ring is clockwise."""
+    return _ring_area(ring) < 0
+
+
+def close_ring(ring: Iterable[Sequence[float]]) -> Ring:
+    """Return a copy of a linear ring with the first coordinate repeated at the end."""
     normalized = [list(coordinate) for coordinate in ring]
     if normalized and normalized[0][:2] != normalized[-1][:2]:
         normalized.append(list(normalized[0]))
+    return normalized
+
+
+def orient_ring(ring: Iterable[Sequence[float]], *, clockwise: bool) -> Ring:
+    """Return a closed ring oriented clockwise or counter-clockwise."""
+    normalized = close_ring(ring)
+    if ring_is_clockwise(normalized) != clockwise:
+        normalized.reverse()
+    return normalized
+
+
+def _normalize_ring(ring: Iterable[Sequence[float]], clockwise: Optional[bool]) -> Ring:
+    normalized = close_ring(ring)
     if clockwise is not None and len(normalized) >= 4:
-        is_clockwise = _ring_area(normalized) < 0
-        if is_clockwise != clockwise:
-            normalized.reverse()
+        normalized = orient_ring(normalized, clockwise=clockwise)
     return normalized
 
 

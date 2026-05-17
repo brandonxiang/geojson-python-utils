@@ -118,7 +118,7 @@ multi_polygon = {
 print(point_in_multipolygon(point, multi_polygon))
 ```
 
-Polygon holes are not handled yet.
+Polygon holes are handled for point-in-polygon checks, area, and centroid calculations. Boundary points count as inside.
 
 ### Draw a Circle Polygon
 
@@ -158,6 +158,8 @@ print(area(polygon))
 print(centroid(polygon))
 print(rectangle_centroid(polygon))
 ```
+
+Use `close_ring()`, `ring_is_clockwise()`, and `orient_ring()` when normalizing polygon topology before export.
 
 ### Destination Point
 
