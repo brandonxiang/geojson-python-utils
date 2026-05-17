@@ -224,6 +224,21 @@ for feature in geojson["features"]:
     print(converted["type"])
 ```
 
+## Format Conversion API
+
+The conversion layer provides a small registry so the package can grow new adapters without a large monolithic conversion function.
+
+```python
+from geojson_utils import convert, read_geojson, write_geojson
+
+point = read_geojson("point.geojson")
+text = convert(point, from_format="geojson", to_format="json")
+round_tripped = convert(text, from_format="json", to_format="geojson")
+write_geojson(round_tripped, "round-trip.geojson")
+```
+
+You can add adapters with `register_converter(from_format, to_format, callable)`. Built-in adapters currently cover GeoJSON file IO and GeoJSON dictionary <-> JSON text conversion.
+
 ## Type Checking
 
 The package includes inline annotations and a `py.typed` marker. Type checkers can read the installed package signatures without separate stub files.
