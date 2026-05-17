@@ -5,6 +5,7 @@ from typing import Any, Iterable, List, Optional, Sequence
 
 from .converters import convert, read_geojson_auto
 from .convertor import convertor
+from .bbox import bbox
 from .geojson_utils import simplify
 from .validation import validate_geojson
 
@@ -24,42 +25,6 @@ def _write_output(value: Any, path: Optional[str]) -> None:
         return
     sys.stdout.write(text)
     sys.stdout.write("\n")
-
-
-def _iter_coordinates(value: Any) -> Iterable[Sequence[float]]:
-    if isinstance(value, dict):
-        value_type = value.get("type")
-        if value_type == "FeatureCollection":
-            for feature in value.get("features", []):
-                yield from _iter_coordinates(feature.get("geometry"))
-        elif value_type == "Feature":
-            yield from _iter_coordinates(value.get("geometry"))
-        elif value_type == "GeometryCollection":
-            for geometry in value.get("geometries", []):
-                yield from _iter_coordinates(geometry)
-        elif value_type == "Point":
-            yield value["coordinates"]
-        elif value_type in ("MultiPoint", "LineString"):
-            for coordinate in value["coordinates"]:
-                yield coordinate
-        elif value_type in ("MultiLineString", "Polygon"):
-            for line in value["coordinates"]:
-                for coordinate in line:
-                    yield coordinate
-        elif value_type == "MultiPolygon":
-            for polygon in value["coordinates"]:
-                for ring in polygon:
-                    for coordinate in ring:
-                        yield coordinate
-
-
-def _bbox(value: Any) -> List[float]:
-    coords = list(_iter_coordinates(value))
-    if not coords:
-        raise ValueError("cannot calculate bbox for empty GeoJSON")
-    xs = [coord[0] for coord in coords]
-    ys = [coord[1] for coord in coords]
-    return [min(xs), min(ys), max(xs), max(ys)]
 
 
 def _cmd_validate(args: argparse.Namespace) -> int:
@@ -93,7 +58,7 @@ def _cmd_simplify(args: argparse.Namespace) -> int:
 
 
 def _cmd_bbox(args: argparse.Namespace) -> int:
-    _write_output(_bbox(_read_input(args.input)), args.output)
+    _write_output(bbox(_read_input(args.input)), args.output)
     return 0
 
 

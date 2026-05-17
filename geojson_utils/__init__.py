@@ -11,3 +11,4 @@ from .wkt import *
 from .csv_adapter import *
 from .file_adapters import *
 from .streaming import *
+from .bbox import *
