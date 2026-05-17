@@ -4,6 +4,7 @@ from typing import Any, Callable, Dict, Iterable, Optional, Tuple
 
 from .validation import GeoJSON, validate_geojson
 from .csv_adapter import csv_to_feature_collection, feature_collection_to_csv
+from .file_adapters import read_geopackage, read_shapefile, write_geopackage, write_shapefile
 from .wkt import geojson_to_wkb, geojson_to_wkt, wkb_to_geojson, wkt_to_geojson
 
 Converter = Callable[[Any], Any]
@@ -103,3 +104,7 @@ register_converter("geojson", "wkb", lambda value: geojson_to_wkb(read_geojson_a
 register_converter("wkb", "geojson", wkb_to_geojson)
 register_converter("csv", "geojson", csv_to_feature_collection)
 register_converter("geojson", "csv", lambda value: feature_collection_to_csv(read_geojson_auto(value)))
+register_converter("shapefile", "geojson", read_shapefile)
+register_converter("geojson", "shapefile", write_shapefile)
+register_converter("geopackage", "geojson", read_geopackage)
+register_converter("geojson", "geopackage", write_geopackage)
