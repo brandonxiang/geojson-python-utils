@@ -245,6 +245,17 @@ write_geojson(round_tripped, "round-trip.geojson")
 
 You can add adapters with `register_converter(from_format, to_format, callable)`. Built-in adapters currently cover GeoJSON file IO and GeoJSON dictionary <-> JSON text conversion.
 
+### WKT / WKB
+
+```python
+from geojson_utils import geojson_to_wkt, wkt_to_geojson
+
+wkt = geojson_to_wkt({"type": "Point", "coordinates": [1, 2]})
+geometry = wkt_to_geojson("POINT (1 2)")
+```
+
+WKT support is implemented for standard GeoJSON geometry types. WKB helpers are available through optional Shapely support and raise a clear error when Shapely is not installed.
+
 ## Command Line
 
 Installing the package exposes `geojson-utils` for common pipeline tasks.
